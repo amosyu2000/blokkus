@@ -5,4 +5,4 @@ test
 
 Amos's test
 
-a branch: edit 1 edit 2
+a branch: edit 1 edit 2 edit 3
