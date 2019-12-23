@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Blokus | Home Screen</title>	
+	<title>Blokus - Player Select</title>
+	<!-- CSS -->
 	<link rel="stylesheet" href="bootstrap.min.css">
+	<link rel="stylesheet" href="home.css">
+	<!-- Custom fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Teko:600&display=swap" rel="stylesheet">
+	<!-- jQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<!-- JS -->
+	<script src="home.js"></script>
 </head>
 <body>
-	<div class="container-fluid bg-light">
-		<div class="container py-5">
-			<h1 class="text-uppercase text-center">Blokus</h1>
-		</div>
-		<div class="container d-flex flex-column flex-sm-row justify-content-around py-5">
-			<a href="#" class="btn btn-outline-primary m-2">
-				<h2>
-					2 Players
-				</h2>
-			</a>
-			<a href="#" class="btn btn-outline-success m-2">
-				<h2>
-					3 Players
-				</h2>
-			</a>
-			<a href="#" class="btn btn-outline-danger m-2">
-				<h2>
-					4 Players
-				</h2>
-			</a>
+	<div class="h-100 w-100">
+		<div class="canvas bg-grid"></div>
+		<div id="bg-pieces" class="canvas"></div>
+		<div class="canvas bg-grad"></div>
+		<div class="d-flex flex-column align-items-center w-100 h-100 text-white text-center">
+			<p id="title" class="mt-auto display-1 font-teko">Blokus</p>
+			<div class="mb-auto w-50 d-sm-flex justify-content-around">
+				<button class="btn btn-primary btn-lg m-2">&#x1F464; &nbsp; &#x1F464;</button>
+				<button class="btn btn-success btn-lg m-2">&#x1F464; &#x1F464; &#x1F464;</button>
+				<button class="btn btn-danger btn-lg m-2">&#x1F464;&#x1F464;&#x1F464;&#x1F464;</button>
+			</div>
+			<p>
+				Built by <a href="https://www.github.com/andytule" target="_blank">Andy Le</a>
+				and <a href="https://www.github.com/amosyu2000" target="_blank">Amos Yu</a>. 
+				Inspired by <a href="https://www.mattelgames.com/en-ca/blokus" target="_blank">Blokus</a> 
+				from Mattel Games.
+			</p>
 		</div>
 	</div>
 </body>

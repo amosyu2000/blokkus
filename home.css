@@ -1,0 +1,38 @@
+/* 
+	================
+	 BASIC ELEMENTS
+	================
+*/
+body {height: 100vh; width: 100vw; overflow: hidden;}
+p,a {color: white;}
+a {text-decoration-style: underline; font-style: italic;} a:hover {color: white;}
+button {width: 200px;}
+
+/* 
+	============================
+	 MODIFIED BOOTSTRAP CLASSES
+	============================
+*/
+
+.display-1 {font-size: 120px;}
+
+.btn-lg {font-size: 30px;}
+
+
+/* 
+	================
+	 CUSTOM CLASSES
+	================
+*/
+
+.font-teko {font-family: 'Teko';}
+.canvas {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+}
+.bg-grid {background-image: url('images/grid.png');}
+.bg-grad {
+	background-image: radial-gradient(circle 760px at 50.7% 60.5%, rgba(72,85,99,0.8) 0%, rgba(41,50,60,0.9) 100% );
+}
