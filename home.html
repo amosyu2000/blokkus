@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Blokus - Player Select</title>
+	<title>Blokkus - Player Select</title>
 	<!-- CSS -->
-	<link rel="stylesheet" href="bootstrap.min.css">
 	<link rel="stylesheet" href="home.css">
 	<!-- Custom fonts -->
 	<link href="https://fonts.googleapis.com/css?family=Teko:600&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Mako&display=swap" rel="stylesheet">
 	<!-- jQuery -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<!-- JS -->
@@ -15,22 +15,46 @@
 <body>
 	<div class="h-100 w-100">
 		<div class="canvas bg-grid"></div>
-		<div id="bg-pieces" class="canvas"></div>
-		<div class="canvas bg-grad"></div>
-		<div class="d-flex flex-column align-items-center w-100 h-100 text-white text-center">
-			<p id="title" class="mt-auto display-1 font-teko">Blokus</p>
-			<div class="mb-auto w-50 d-sm-flex justify-content-around">
-				<button class="btn btn-primary btn-lg m-2">&#x1F464; &nbsp; &#x1F464;</button>
-				<button class="btn btn-success btn-lg m-2">&#x1F464; &#x1F464; &#x1F464;</button>
-				<button class="btn btn-danger btn-lg m-2">&#x1F464;&#x1F464;&#x1F464;&#x1F464;</button>
-			</div>
-			<p>
-				Built by <a href="https://www.github.com/andytule" target="_blank">Andy Le</a>
-				and <a href="https://www.github.com/amosyu2000" target="_blank">Amos Yu</a>. 
-				Inspired by <a href="https://www.mattelgames.com/en-ca/blokus" target="_blank">Blokus</a> 
-				from Mattel Games.
-			</p>
+		<div id="bg-pieces" class="canvas">
+			<svg id="t4" overflow="visible" angle="0">
+				<polygon points="-150,-50,150,-50,150,50,50,50,50,150,-50,150,-50,50,-150,50"></polygon>
+			</svg>
+			<svg id="n" overflow="visible" angle="0">
+				<polygon points="-250,-50,50,-50,50,50,150,50,150,150,-50,150,-50,50,-250,50"></polygon>
+			</svg>
+			<svg id="x" overflow="visible" angle="0">
+				<polygon points="-150,-50,-50,-50,-50,-150,50,-150,50,-50,150,-50,150,50,50,50,50,150,-50,150,-50,50,-150,50"></polygon>
+			</svg>
+			<svg id="v3" overflow="visible" angle="0">
+				<polygon points="-150,-50,-50,-50,-50,-150,50,-150,50,50,-150,50"></polygon>
+			</svg>
+			<svg id="l4" overflow="visible" angle="0">
+				<polygon points="-50,-150,150,-150,150,-50,50,-50,50,150,-50,150"></polygon>
+			</svg>
+			<svg id="i2" overflow="visible" angle="0">
+				<polygon points="-50,-50,150,-50,150,50,-50,50"></polygon>
+			</svg>
 		</div>
+		<div class="canvas bg-grad"></div>
+		<div class="v-flex container w-100 h-100 text-center">
+			<button id="title" class="gradual btn display-1 font-teko">Blokkus</button>
+			<div class="gradual w-100 h-flex">
+				<button class="btn display-2 m" onclick="playerSelect(2)">&#x1F464; &nbsp; &#x1F464;</button>
+				<button class="btn display-2 m" onclick="playerSelect(3)">&#x1F464; &#x1F464; &#x1F464;</button>
+				<button class="btn display-2 m" onclick="playerSelect(4)">&#x1F464;&#x1F464;&#x1F464;&#x1F464;</button>
+			</div>
+			<div id="player-select" class="gradual w-100 v-flex">
+				<div class="h-flex"></div>
+				<p id="player-select-title" class="gradual p w-100 display-2 bg-white fixed-top text-center"></p>
+				<a id="player-select-start" class="gradual p w-100 display-2 bg-white fixed-bottom" href="">Start Game</a>
+			</div>
+		</div>
+		<p class="w-100 fixed-bottom text-center p">
+			Built by <a class="link" href="https://www.github.com/andytule" target="_blank">Andy Le</a>
+			and <a class="link" href="https://www.github.com/amosyu2000" target="_blank">Amos Yu</a>. 
+			Inspired by <a class="link" href="https://www.mattelgames.com/en-ca/blokus" target="_blank">Blokus</a> 
+			from Mattel Games.
+		</p>
 	</div>
 </body>
 </html>
