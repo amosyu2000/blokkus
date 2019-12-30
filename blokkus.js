@@ -103,7 +103,7 @@ function first_piece(a_piece, row, column, grid) {
 }
 
 // Function to build the first pieces
-function build_first(a_piece, row, column, grid, player) {
+function place_piece(a_piece, row, column, grid, player) {
 	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
 	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
 	for (let i = 0; i < a_piece.rows; i++) {
@@ -116,16 +116,12 @@ function build_first(a_piece, row, column, grid, player) {
 }
 
 // Function to check if the area is a valid area to put a piece
-// To pass, the piece must:
-// - Touch another piece's corner of the same player
-// - Not overlap another piece
-// - Not touch another piece's side
 function area_check(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0];
-	let column_start = column - a_piece.index_point[1];
-	let not_touching = true;
-	let is_corner = false;
-	let is_zero = true;
+	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
+	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
+	let not_touching = true; // Boolean if piece is touching another piece on its side of the same color 
+	let is_corner = false; // Boolean if piece's corner is touching another piece's corner of the same color
+	let is_zero = true; // Boolean if the piece is not covering an occupied tile of the grid
 	for (let i = 0; i < a_piece.rows; i++) {
 		for (j = 0; j < a_piece.columns; j++) {
 			if ((a_piece.grid[i][j] == 0) && (grid[row_start + i][column_start + j] == player.color)) {
@@ -142,25 +138,6 @@ function area_check(a_piece, row, column, grid, player) {
 	return ((is_corner) && (is_zero) && (not_touching));
 }
 
-// Function to place piece into grid
-function place_piece(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0];
-	let column_start = column - a_piece.index_point[1];
-	if (area_check(a_piece, row, column, grid, player)) {
-		for (let i = 0; i < a_piece.rows; i++) {
-			for (let j = 0; j < a_piece.columns; j++) {
-				if (a_piece.grid[i][j] == 1) {
-					grid[row_start + i][column_start + j] = player.color;
-				}
-			}
-		}
-	}
-	else {
-		console.log("This piece does not fit.");
-	}
-}
-
-
 // Main function for game
 function blokkus() {
 	let grid = []; //Create 20 by 20 grid
@@ -169,7 +146,7 @@ function blokkus() {
 	let player_list = []
 	let piece_num = 0;
 	let pass = true;
-	let game_state = true;
+	let game_state = true
 	for (let i = 0; i < 20; i++) {
 		grid[i] = [];
 		for (let j = 0; j < 20; j++) {
@@ -183,14 +160,14 @@ function blokkus() {
 		player_1.pieces = player_1.pieces.concat(player_1.pieces); // Add extra pieces (since only 2 players)
 		player_2.pieces = player_2.pieces.concat(player_2.pieces); // Add extra pieces (since only 2 players)
 		player_list = [player_1, player_2]; // Create player list
-		let game_state = (player_1.continue || player_2.continue); // Create boolean for game state
+		game_state = (player_1.continue || player_2.continue); // Create boolean for game state
 	}
 	else if (num_players == 3) {
 		let player_1 = new Player("B"); // Creater player 1
 		let player_2 = new Player("R"); // Creater player 2
 		let player_3 = new Player("Y"); // Creater player 3
 		player_list = [player_1, player_2, player_3]; // Create player list
-		let game_state = (player_1.continue || player_2.continue || player_3.continue); // Create boolean for game state
+		game_state = (player_1.continue || player_2.continue || player_3.continue); // Create boolean for game state
 	}
 	else if (num_players == 4) {
 		let player_1 = new Player("B"); // Creater player 1
@@ -198,13 +175,12 @@ function blokkus() {
 		let player_3 = new Player("Y"); // Creater player 3
 		let player_4 = new Player("G"); // Creater player 4
 		player_list = [player_1, player_2, player_3, player_4]; // Create player list
-		let game_state = (player_1.continue || player_2.continue || player_3.continue || player_4.continue); // Create boolean for game state
+		game_state = (player_1.continue || player_2.continue || player_3.continue || player_4.continue); // Create boolean for game state
 	}
 	for (let i = 0; i < player_list.length; i++) { // For loop for each player to place their first piece
 		do {
-			console.log("Player " + i.toString() + " please enter a row and column to place your first piece.");
-			row = parseInt(window.prompt("Row [0 - 19]: "), 10);
-			column = parseInt(window.prompt("Column [0 - 19]: "), 10);
+			row = parseInt(window.prompt("Player " + i.toString() + ": Row [0 - 19]: "), 10);
+			column = parseInt(window.prompt("Player " + i.toString() + ": Column [0 - 19]: "), 10);
 			piece_num = window.prompt("Which piece number you want to put: ");
 			pass = first_piece(player_list[i].pieces[piece_num - 1], row, column, grid);
 			if (pass == false) {
@@ -212,16 +188,38 @@ function blokkus() {
 			}
 		}
 		while (pass == false);
-		build_first(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
+		place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
 		player_list[i].pieces[piece_num - 1] = 0;
-		console.log(player_list[i].pieces);
 		console.log(grid);
+		console.log(player_list[i].pieces);
 		pass = true;
 	}
 	do {
-
+		for (let i = 0; i < player_list.length; i++) {
+			if (player_list[i].continue == true) {
+				turn_input = window.prompt("Player " + i.toString() + " please make a decision (place a piece: 1 or concede: 2)");
+				if (turn_input == 1) {
+					do {
+						row = parseInt(window.prompt("Player " + i.toString() + ": Row [0 - 19]: "), 10);
+						column = parseInt(window.prompt("Player " + i.toString() + ": Column [0 - 19]: "), 10);
+						piece_num = window.prompt("Which piece number you want to put: ");
+						pass = area_check(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
+						if (pass == false) {
+							console.log("Invalid piece placement, please try again.");
+						}
+					}
+					while (pass == false);
+					place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
+					player_list[i].pieces[piece_num - 1] = 0;
+					console.log(grid);
+					console.log(player_list[i].pieces);
+					pass = true;
+				}
+				else {
+					player_list[i].continue = false;
+				}
+			}
+		}
 	}
 	while (game_state == true);
 }
-
-blokkus();
