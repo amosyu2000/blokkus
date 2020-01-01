@@ -3,7 +3,7 @@ class Piece {
 	constructor(rows, columns, index_row, index_column, value, grid){ // Takes 5 arguments (length, height, index_x, index_y, values)
 		this.rows = rows; // Row size of piece
 		this.columns = columns; // Column size of piece
-		this.index_point = [index_row, index_column]; // Rotational point of piece 
+		this.anchor_point = [index_row, index_column]; // Rotational point of piece 
 		this.top = 1; // Top position
 		this.bottom = (rows - 2); // Bottom position
 		this.left = 1; // Left position
@@ -55,16 +55,16 @@ var player_pieces = [piece_1, piece_2, piece_3, piece_4, piece_5, piece_6, piece
 // Function to check wether piece placement is in bounds
 function in_bounds(a_piece, row, column, grid) {
 	state = true; // State to be returned false if any of the tests fail
-	if ((row - (a_piece.index_point[0] - a_piece.top)) < 0) { // If the piece is not greater than 0 (rows)
+	if ((row - (a_piece.anchor_point[0] - a_piece.top)) < 0) { // If the piece is not greater than 0 (rows)
 		state = false;
 	}
-	if (19 < (row + (a_piece.bottom - a_piece.index_point[0]))) { // If the piece is not greater than 0 (columns)
+	if (19 < (row + (a_piece.bottom - a_piece.anchor_point[0]))) { // If the piece is not greater than 0 (columns)
 		state = false;
 	}
-	if ((column - (a_piece.index_point[1] - a_piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
+	if ((column - (a_piece.anchor_point[1] - a_piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
 		state = false;
 	}
-	if (19 < (column + (a_piece.right - a_piece.index_point[1]))) { // If the piece is not less than or equal to 19 (columns)
+	if (19 < (column + (a_piece.right - a_piece.anchor_point[1]))) { // If the piece is not less than or equal to 19 (columns)
 		state = false;
 	}
 	return state;
@@ -74,25 +74,25 @@ function in_bounds(a_piece, row, column, grid) {
 function first_piece(a_piece, row, column, grid) {
 	let filled_corner = false; // Boolean to check if corner piece touches corner and has tile value 1
 	if (in_bounds(a_piece, row, column, grid)) { // If the piece is in bounds
-		if ((a_piece.index_point[0] - a_piece.top) == row) { 
-			if ((a_piece.index_point[1] - a_piece.left) == column) { // If the piece is in the top left corner
+		if ((a_piece.anchor_point[0] - a_piece.top) == row) { 
+			if ((a_piece.anchor_point[1] - a_piece.left) == column) { // If the piece is in the top left corner
 				if (a_piece.grid[a_piece.top][a_piece.left] == 1) {
 					filled_corner = true;
 				}
 			}
-			else if ((a_piece.right - a_piece.index_point[1]) == (19 - column)) { // If the piece is in the bottom left corner
+			else if ((a_piece.right - a_piece.anchor_point[1]) == (19 - column)) { // If the piece is in the bottom left corner
 				if (a_piece.grid[a_piece.top][a_piece.right] == 1) {
 					filled_corner = true;
 				}
 			}
 		}
-		else if ((a_piece.bottom - a_piece.index_point[0]) == (19 - row)) { // If the piece is in the top right corner
-			if ((a_piece.index_point[1] - a_piece.left) == column) {
+		else if ((a_piece.bottom - a_piece.anchor_point[0]) == (19 - row)) { // If the piece is in the top right corner
+			if ((a_piece.anchor_point[1] - a_piece.left) == column) {
 				if (a_piece.grid[a_piece.bottom][a_piece.left] == 1) {
 					filled_corner = true;
 				}
 			}
-			else if ((a_piece.right - a_piece.index_point[1]) == (19 - column)) { // If the piece is in the bottom right corner
+			else if ((a_piece.right - a_piece.anchor_point[1]) == (19 - column)) { // If the piece is in the bottom right corner
 				if (a_piece.grid[a_piece.bottom][a_piece.right] == 1) {
 					filled_corner = true;
 				}
@@ -104,8 +104,8 @@ function first_piece(a_piece, row, column, grid) {
 
 // Function to build the first pieces
 function place_piece(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
-	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
+	let row_start = row - a_piece.anchor_point[0]; // Distance from piece index and top of piece
+	let column_start = column - a_piece.anchor_point[1]; // Distance from piece index and left side of piece
 	for (let i = 0; i < a_piece.rows; i++) {
 		for (let j = 0; j < a_piece.columns; j++) {
 			if (a_piece.grid[i][j] == 1) { // If tile of piece is a filled tile
@@ -117,8 +117,8 @@ function place_piece(a_piece, row, column, grid, player) {
 
 // Function to check if the area is a valid area to put a piece
 function area_check(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
-	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
+	let row_start = row - a_piece.anchor_point[0]; // Distance from piece index and top of piece
+	let column_start = column - a_piece.anchor_point[1]; // Distance from piece index and left side of piece
 	let not_touching = true; // Boolean if piece is touching another piece on its side of the same color 
 	let is_corner = false; // Boolean if piece's corner is touching another piece's corner of the same color
 	let is_zero = true; // Boolean if the piece is not covering an occupied tile of the grid
@@ -138,16 +138,41 @@ function area_check(a_piece, row, column, grid, player) {
 	return ((is_corner) && (is_zero) && (not_touching));
 }
 
+// Function to rotate a piece of a player clockwise 90 degrees
+function rotate(a_player, piece_num) {
+	let old = a_player.pieces[piece_num]; // Variable for old piece
+	let new_grid = []; // New grid for new piece grid
+	for (let i = 0; i < old.columns; i++) {
+		let temp = [];
+		for (let j = (old.rows - 1); 0 <= j; j--) {
+			temp.push(old.grid[j][i]);
+		}
+		new_grid.push(temp);
+	}
+	a_player.pieces[piece_num] = new Piece(old.columns, old.rows, old.anchor_point[1], (old.rows - 1 - old.anchor_point[0]), old.value, new_grid); // Create new Piece object
+}
+
+// Function to flip piece to the other side
+function flip(a_player, piece_num) {
+	let old = a_player.pieces[piece_num]; // Variable for old piece
+	let new_grid = []; // New grid for new piece grid
+	for (let i = (old.rows - 1); 0 <= i; i--) {
+		new_grid.push(old.grid[i]);
+	}
+	a_player.pieces[piece_num] = new Piece(old.rows, old.columns, (old.rows - 1 - old.anchor_point[0]), old.anchor_point[1], old.value, new_grid); // Create new Piece object
+	console.log(a_player.pieces[piece_num]);
+}
+
 // Main function for game
 function blokkus() {
-	let grid = []; //Create 20 by 20 grid
-	let row = 0;
-	let column = 0;
-	let player_list = []
-	let piece_num = 0;
-	let pass = true;
-	let game_state = true
-	for (let i = 0; i < 20; i++) {
+	let grid = []; // Initialize grid 
+	let row = 0; // Initialize row variable
+	let column = 0; // Initialize column variable
+	let player_list = [] // Initialize player list
+	let piece_num = 0; // Initilaize piece number
+	let pass = true; // Initliaze pass variable
+	let game_state = true; // Initilize game state
+	for (let i = 0; i < 20; i++) { // Create 20 x 20 grid
 		grid[i] = [];
 		for (let j = 0; j < 20; j++) {
 			grid[i][j] = 0;
