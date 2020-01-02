@@ -8,20 +8,17 @@
 	<link rel="stylesheet" href="/resources/css/board.css">
 	<!-- Custom fonts -->
 	<link href="https://fonts.googleapis.com/css?family=Mako&display=swap" rel="stylesheet">
-	<!-- jQuery -->
+	<!-- External Libraries -->
 	<script src="/vendors/jquery/jquery-3.4.1.min.js"></script>
-	<!-- three.js -->
-	<script src="/vendors/three.js/three.min.js"></script>
-	<script src="/vendors/three.js/camera-controls.min.js"></script>
-	<script src="/vendors/three.js/GLTFLoader.js"></script>
+	<script src="/vendors/three/three.min.js"></script>
+	<script src="/vendors/three/GLTFLoader.js"></script>
+	<script src="/vendors/three/camera-controls.min.js"></script>
 	<!-- JS -->
-	<script src="/resources/js/board.js"></script>
+	<script type="module" src="/resources/js/board.js"></script>
 </head>
 
 <body>
 	<div class="floating">
-		<button class="btn" onclick="cameraControls.reset(false);currentAzimuthalAngle=0">Reset</button>
-		<button class="btn" onclick="rotate()">Rotate</button>
 		<button class="btn" onclick="viewFromTop()">View from Above</button>
 		<button class="btn" onclick="viewFromSide()">View from Side</button>
 	</div>
