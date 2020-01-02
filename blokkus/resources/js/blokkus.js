@@ -13,6 +13,31 @@ class Piece {
 
 		this.mesh = new THREE.Mesh(); // The 3D mesh associated with the piece
 		this.isPlaced = false; // If piece is currently on or off the board
+
+	}
+	// Function to rotate the piece clockwise 90 degrees a given number of times
+	rotate(numberOfRotations) {
+		for (let rotation = 0; rotation < numberOfRotations; rotation++) {
+			let new_grid = []; // New grid for new piece grid
+			for (let i = 0; i < this.columns; i++) {
+				let temp = [];
+				for (let j = (this.rows - 1); 0 <= j; j--) {
+					temp.push(this.grid[j][i]);
+				}
+				new_grid.push(temp);
+			}
+
+			let old_anchor_point_0 = this.anchor_point[0];
+
+			this.anchor_point[0] = this.anchor_point[1]
+			this.anchor_point[1] = this.rows - old_anchor_point_0 - 1; // New anchor point
+
+			let old_rows = this.rows;
+			this.rows = this.columns;
+			this.columns = old_rows;
+
+			this.grid = new_grid; // New grid
+		}
 	}
 }
 
@@ -139,6 +164,17 @@ function area_check(a_piece, row, column, grid, player) {
 		}
 	}
 	return ((is_corner) && (is_zero) && (not_touching));
+}
+
+// Function to flip piece to the other side
+function flip(a_player, piece_num) {
+	let old = a_player.pieces[piece_num]; // Variable for old piece
+	let new_grid = []; // New grid for new piece grid
+	for (let i = (old.rows - 1); 0 <= i; i--) {
+		new_grid.push(old.grid[i]);
+	}
+	a_player.pieces[piece_num] = new Piece(old.rows, old.columns, (old.rows - 1 - old.anchor_point[0]), old.anchor_point[1], old.value, new_grid); // Create new Piece object
+	console.log(a_player.pieces[piece_num]);
 }
 
 // Main function for game

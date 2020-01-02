@@ -20,7 +20,7 @@ const INVALID_COLOR = 0x777777
 // Scene, camera, and renderer
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
-camera.position.set(0,13,16)
+camera.position.set(0,14.5,17)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 
 // Camera cameraControls
@@ -170,11 +170,11 @@ function createPieceMesh(piece, color) {
 
 	return loadGLTF('tile.glb').then(function(mesh) {
 		let pieceGeometry = new THREE.Geometry()
-		for (const [i, row] of piece.grid.entries()) {
-			for (const [j, tile] of row.entries()) {
+		for (const [k, row] of piece.grid.entries()) {
+			for (const [i, tile] of row.entries()) {
 				if (tile == 1) {
-					let posX = i - piece.anchor_point[0]
-					let posZ = j - piece.anchor_point[1]
+					let posX = i - piece.anchor_point[1]
+					let posZ = k - piece.anchor_point[0]
 
 					let tileGeometry = new THREE.Geometry().fromBufferGeometry(mesh.clone().geometry)
 					tileGeometry.translate(posX,0,posZ)
@@ -194,15 +194,129 @@ function layPlayerPieces(player, rotation) {
 
 	createPieceMesh(player.pieces[0], player.color).then( (mesh) => {
 		player.pieces[0].mesh = mesh
-		player.pieces[0].mesh.position.set(-10,-0.5,11).applyMatrix4(rotatedMatrix)
+		player.pieces[0].mesh.position.set(5.5,-0.5,15).applyMatrix4(rotatedMatrix)
 		player.pieces[0].mesh.rotation.y = rotation
 		scene.add(player.pieces[0].mesh)
 	})
 	createPieceMesh(player.pieces[1], player.color).then( (mesh) => {
 		player.pieces[1].mesh = mesh
-		player.pieces[1].mesh.position.set(-8,-0.5,11).applyMatrix4(rotatedMatrix)
+		player.pieces[1].mesh.position.set(-6,-0.5,12).applyMatrix4(rotatedMatrix)
 		player.pieces[1].mesh.rotation.y = rotation
 		scene.add(player.pieces[1].mesh)
+	})
+	createPieceMesh(player.pieces[2], player.color).then( (mesh) => {
+		player.pieces[2].mesh = mesh
+		player.pieces[2].mesh.position.set(4,-0.5,15).applyMatrix4(rotatedMatrix)
+		player.pieces[2].mesh.rotation.y = rotation
+		scene.add(player.pieces[2].mesh)
+	})
+	createPieceMesh(player.pieces[3], player.color).then( (mesh) => {
+		player.pieces[3].mesh = mesh
+		player.pieces[3].mesh.position.set(3,-0.5,13.5).applyMatrix4(rotatedMatrix)
+		player.pieces[3].mesh.rotation.y = rotation
+		scene.add(player.pieces[3].mesh)
+	})
+	createPieceMesh(player.pieces[4], player.color).then( (mesh) => {
+		player.pieces[4].mesh = mesh
+		player.pieces[4].mesh.position.set(-2,-0.5,12).applyMatrix4(rotatedMatrix)
+		player.pieces[4].mesh.rotation.y = rotation
+		scene.add(player.pieces[4].mesh)
+	})
+	createPieceMesh(player.pieces[5], player.color).then( (mesh) => {
+		player.pieces[5].mesh = mesh
+		player.pieces[5].mesh.position.set(5.5,-0.5,17.5).applyMatrix4(rotatedMatrix)
+		player.pieces[5].mesh.rotation.y = rotation
+		scene.add(player.pieces[5].mesh)
+	})
+	createPieceMesh(player.pieces[6], player.color).then( (mesh) => {
+		player.pieces[6].mesh = mesh
+		player.pieces[6].mesh.position.set(-7.5,-0.5,10.5).applyMatrix4(rotatedMatrix)
+		player.pieces[6].mesh.rotation.y = rotation
+		scene.add(player.pieces[6].mesh)
+	})
+	createPieceMesh(player.pieces[7], player.color).then( (mesh) => {
+		player.pieces[7].mesh = mesh
+		player.pieces[7].mesh.position.set(2.5,-0.5,17.5).applyMatrix4(rotatedMatrix)
+		player.pieces[7].mesh.rotation.y = rotation
+		scene.add(player.pieces[7].mesh)
+	})
+	createPieceMesh(player.pieces[8], player.color).then( (mesh) => {
+		player.pieces[8].mesh = mesh
+		player.pieces[8].mesh.position.set(1.5,-0.5,11.5).applyMatrix4(rotatedMatrix)
+		player.pieces[8].mesh.rotation.y = rotation
+		scene.add(player.pieces[8].mesh)
+	})
+	createPieceMesh(player.pieces[9], player.color).then( (mesh) => {
+		player.pieces[9].mesh = mesh
+		player.pieces[9].mesh.position.set(-10.5,-0.5,12).applyMatrix4(rotatedMatrix)
+		player.pieces[9].mesh.rotation.y = rotation
+		scene.add(player.pieces[9].mesh)
+	})
+	createPieceMesh(player.pieces[10], player.color).then( (mesh) => {
+		player.pieces[10].mesh = mesh
+		player.pieces[10].mesh.position.set(8,-0.5,16).applyMatrix4(rotatedMatrix)
+		player.pieces[10].mesh.rotation.y = rotation
+		scene.add(player.pieces[10].mesh)
+	})
+	createPieceMesh(player.pieces[11], player.color).then( (mesh) => {
+		player.pieces[11].mesh = mesh
+		player.pieces[11].mesh.position.set(-3.5,-0.5,13.5).applyMatrix4(rotatedMatrix)
+		player.pieces[11].mesh.rotation.y = rotation
+		scene.add(player.pieces[11].mesh)
+	})
+	createPieceMesh(player.pieces[12], player.color).then( (mesh) => {
+		player.pieces[12].mesh = mesh
+		player.pieces[12].mesh.position.set(4,-0.5,11).applyMatrix4(rotatedMatrix)
+		player.pieces[12].mesh.rotation.y = rotation
+		scene.add(player.pieces[12].mesh)
+	})
+	createPieceMesh(player.pieces[13], player.color).then( (mesh) => {
+		player.pieces[13].mesh = mesh
+		player.pieces[13].mesh.position.set(6.5,-0.5,12.5).applyMatrix4(rotatedMatrix)
+		player.pieces[13].mesh.rotation.y = rotation
+		scene.add(player.pieces[13].mesh)
+	})
+	createPieceMesh(player.pieces[14], player.color).then( (mesh) => {
+		player.pieces[14].mesh = mesh
+		player.pieces[14].mesh.position.set(9.5,-0.5,12.5).applyMatrix4(rotatedMatrix)
+		player.pieces[14].mesh.rotation.y = rotation
+		scene.add(player.pieces[14].mesh)
+	})
+	createPieceMesh(player.pieces[15], player.color).then( (mesh) => {
+		player.pieces[15].mesh = mesh
+		player.pieces[15].mesh.position.set(-2,-0.5,16.5).applyMatrix4(rotatedMatrix)
+		player.pieces[15].mesh.rotation.y = rotation
+		scene.add(player.pieces[15].mesh)
+	})
+	createPieceMesh(player.pieces[16], player.color).then( (mesh) => {
+		player.pieces[16].mesh = mesh
+		player.pieces[16].mesh.position.set(-6,-0.5,14.5).applyMatrix4(rotatedMatrix)
+		player.pieces[16].mesh.rotation.y = rotation
+		scene.add(player.pieces[16].mesh)
+	})
+	createPieceMesh(player.pieces[17], player.color).then( (mesh) => {
+		player.pieces[17].mesh = mesh
+		player.pieces[17].mesh.position.set(-4.5,-0.5,16).applyMatrix4(rotatedMatrix)
+		player.pieces[17].mesh.rotation.y = rotation
+		scene.add(player.pieces[17].mesh)
+	})
+	createPieceMesh(player.pieces[18], player.color).then( (mesh) => {
+		player.pieces[18].mesh = mesh
+		player.pieces[18].mesh.position.set(-10,-0.5,14.5).applyMatrix4(rotatedMatrix)
+		player.pieces[18].mesh.rotation.y = rotation
+		scene.add(player.pieces[18].mesh)
+	})
+	createPieceMesh(player.pieces[19], player.color).then( (mesh) => {
+		player.pieces[19].mesh = mesh
+		player.pieces[19].mesh.position.set(0.5,-0.5,15).applyMatrix4(rotatedMatrix)
+		player.pieces[19].mesh.rotation.y = rotation
+		scene.add(player.pieces[19].mesh)
+	})
+	createPieceMesh(player.pieces[20], player.color).then( (mesh) => {
+		player.pieces[20].mesh = mesh
+		player.pieces[20].mesh.position.set(-8.5,-0.5,17).applyMatrix4(rotatedMatrix)
+		player.pieces[20].mesh.rotation.y = rotation
+		scene.add(player.pieces[20].mesh)
 	})
 }
 
@@ -221,15 +335,15 @@ function castPieceShadow() {
 		$('body').css('cursor', 'pointer')
 	}
 
-	for (const [i, row] of currentPiece.grid.entries()) {
-		for (const [k, stud] of row.entries()) {
+	for (const [k, row] of currentPiece.grid.entries()) {
+		for (const [i, stud] of row.entries()) {
 
-			let posX = i + 10 + currentStud.position.x - currentPiece.anchor_point[0]
-			let posZ = k + 10 + currentStud.position.z - currentPiece.anchor_point[1]
+			let posX = i + 10 + currentStud.position.x - currentPiece.anchor_point[1]
+			let posZ = k + 10 + currentStud.position.z - currentPiece.anchor_point[0]
 
 			if (stud == 1) {
 				try {
-					studs[posX][posZ].material.color.set(color)
+					studs[posZ][posX].material.color.set(color)
 				}
 				catch(e){}
 			}
@@ -301,7 +415,7 @@ $(document).click(function() {
 	// For clicking on board (not the studs)
 	if (raycaster.intersectObject(boardMesh)[0]) {} // Do nothing
 
-	
+
 })
 
 
@@ -342,12 +456,12 @@ scene.add(boardMesh)
 // Studs
 loadGLTF('stud.glb').then((mesh) => {
 	let material = new THREE.MeshStandardMaterial({ color: WHITE })
-	for (let i = -10; i < 10; i++) {
+	for (let k = -10; k < 10; k++) {
 		let row = []
-		for (let j = -10; j < 10; j++) {
+		for (let i = -10; i < 10; i++) {
 			let m = mesh.clone()
 			m.material = material.clone()
-			m.position.set(i,0,j)
+			m.position.set(i,0,k)
 			scene.add(m)
 			row.push(m)
 		}
