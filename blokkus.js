@@ -170,6 +170,8 @@ function blokkus() {
 	let column = 0; // Initialize column variable
 	let player_list = [] // Initialize player list
 	let piece_num = 0; // Initilaize piece number
+	let rotate_piece = 0;
+	let flip_piece = 0;
 	let pass = true; // Initliaze pass variable
 	let game_state = true; // Initilize game state
 	for (let i = 0; i < 20; i++) { // Create 20 x 20 grid
@@ -214,11 +216,13 @@ function blokkus() {
 		}
 		while (pass == false);
 		place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
+		player_list[i].score += player_list[i].pieces[piece_num - 1].value;
 		player_list[i].pieces[piece_num - 1] = 0;
 		console.log(grid);
 		console.log(player_list[i].pieces);
 		pass = true;
 	}
+
 	do {
 		for (let i = 0; i < player_list.length; i++) {
 			if (player_list[i].continue == true) {
@@ -228,6 +232,16 @@ function blokkus() {
 						row = parseInt(window.prompt("Player " + i.toString() + ": Row [0 - 19]: "), 10);
 						column = parseInt(window.prompt("Player " + i.toString() + ": Column [0 - 19]: "), 10);
 						piece_num = window.prompt("Which piece number you want to put: ");
+						rotate_piece = parseInt(window.prompt("Would you like to rotate this piece? (0 for NO, 1 for 90, 2 for 180, 3 for 270):"));
+						if (rotate != 0) {
+							for (i = 1; i <= rotate; i++) {
+								rotate(player_list[i], piece_num);
+							}
+						}
+						flip_piece = parseInt(window.prompt("Would you like to flip this piece? (0 for NO, 1 for Yes):"));
+						if (flip != 1) {
+							flip(player_list[i], piece_num);
+						}
 						pass = area_check(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
 						if (pass == false) {
 							console.log("Invalid piece placement, please try again.");
@@ -235,6 +249,7 @@ function blokkus() {
 					}
 					while (pass == false);
 					place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
+					player_list[i].score += player_list[i].pieces[piece_num - 1].value;
 					player_list[i].pieces[piece_num - 1] = 0;
 					console.log(grid);
 					console.log(player_list[i].pieces);
