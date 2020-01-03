@@ -3,9 +3,19 @@ canvas {width:100%; height:100%;}
 button {font-family:'Mako'; font-size:1rem;} button:focus{outline:0;}
 
 .floating {position:absolute; z-index:1;}
+
 /* Buttons with the white borders */
-.btn {background-color:transparent; color:white; padding:0.7rem; margin:1rem; transition:all 0.25s; border:0.15em solid white; border-radius: 0.4rem; cursor:pointer;}
+.btn {background-color:black; color:white; padding:0.7rem; margin:1vmin; transition:all 0.25s; border:0.15rem solid white; border-radius: 0.4rem; cursor:pointer;}
 .btn:hover {background-color:white; color:black; font-weight: bolder;}
+
+.btn-red {color:indianred; border:0.15rem solid indianred;} .btn-red:hover {background-color:indianred;}
+
+.container {
+	bottom:0;
+	margin: 3vmin;  
+}
+.fixed-left {left:0;}
+.fixed-right {right:0;}
 
 
 

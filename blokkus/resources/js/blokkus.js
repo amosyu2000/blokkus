@@ -1,5 +1,6 @@
 // Class for piece 
 class Piece { 
+
 	constructor(rows, columns, anchor_row, anchor_column, value, grid){ // Takes 5 arguments (length, height, index_x, index_y, values)
 		this.rows = rows; // Row size of piece
 		this.columns = columns; // Column size of piece
@@ -13,8 +14,9 @@ class Piece {
 
 		this.mesh = new THREE.Mesh(); // The 3D mesh associated with the piece
 		this.isPlaced = false; // If piece is currently on or off the board
-
+		this.animationFrame = null; // For storing the current animation of the piece (Ex. https://developer.mozilla.org/en-US/docs/Web/API/Window/cancelAnimationFrame )
 	}
+
 	// Function to rotate the piece clockwise 90 degrees a given number of times
 	rotate(numberOfRotations) {
 		for (let rotation = 0; rotation < numberOfRotations; rotation++) {
@@ -28,10 +30,11 @@ class Piece {
 			}
 
 			let old_anchor_point_0 = this.anchor_point[0];
+			// New anchor point
+			this.anchor_point[0] = this.anchor_point[1];
+			this.anchor_point[1] = this.rows - old_anchor_point_0 - 1; 
 
-			this.anchor_point[0] = this.anchor_point[1]
-			this.anchor_point[1] = this.rows - old_anchor_point_0 - 1; // New anchor point
-
+			// Switch rows and columns
 			let old_rows = this.rows;
 			this.rows = this.columns;
 			this.columns = old_rows;
@@ -39,12 +42,31 @@ class Piece {
 			this.grid = new_grid; // New grid
 		}
 	}
+
+	// Function to flip piece to the other side
+	flip() {
+		let new_grid = []; // New grid for new piece grid
+		for (let i = (this.rows - 1); 0 <= i; i--) {
+			new_grid.push(this.grid[i]);
+		}
+
+		let old_anchor_point_0 = this.anchor_point[0];
+		// New anchor point
+		this.anchor_point[0] = this.rows - 1 - old_anchor_point_0;
+
+		this.grid = new_grid; // New grid
+	}
+
 }
 
 // Class for player 
 export class Player { 
-	constructor(name, color) { // Takes two arguments (name, color)
+	constructor(name, color, rotation) { // Takes three arguments (name, color, angle)
 		this.name = name; // Player name
+		this.color = color; // Color of player's tiles
+		this.rotation = rotation; // Where the player is sitting around the table
+		this.score = 0; // Player score
+		this.continue = true; // Forfeit status
 		// Blokus pieces
 		// Grid goes down and right
 		// 1 = Tile
@@ -74,9 +96,6 @@ export class Player {
 			new Piece(5, 5, 2, 2, 5, [[-2, -1, 0, -1, -2], [-1, 0, 1, 0, -1], [0, 1, 1, 1, 0], [-1, 0, 1, 0, -1], [-2, -1, 0, -1, -2]]),
 			new Piece(4, 6, 2, 2, 5, [[-2, -1, 0, -1, -2, -2], [-1, 0, 1, 0, 0, -1], [0, 1, 1, 1, 1, 0], [-1, 0, 0, 0, 0, -1]]),
 		]
-		this.color = color; // Color of player's tiles
-		this.score = 0; // Player score
-		this.continue = true; // Forfeit status
 	}
 }
 
@@ -166,16 +185,6 @@ function area_check(a_piece, row, column, grid, player) {
 	return ((is_corner) && (is_zero) && (not_touching));
 }
 
-// Function to flip piece to the other side
-function flip(a_player, piece_num) {
-	let old = a_player.pieces[piece_num]; // Variable for old piece
-	let new_grid = []; // New grid for new piece grid
-	for (let i = (old.rows - 1); 0 <= i; i--) {
-		new_grid.push(old.grid[i]);
-	}
-	a_player.pieces[piece_num] = new Piece(old.rows, old.columns, (old.rows - 1 - old.anchor_point[0]), old.anchor_point[1], old.value, new_grid); // Create new Piece object
-	console.log(a_player.pieces[piece_num]);
-}
 
 // Main function for game
 function blokkus() {

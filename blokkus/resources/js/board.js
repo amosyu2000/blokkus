@@ -29,16 +29,6 @@ CameraControls.install( { THREE: THREE } );
 const cameraControls = new CameraControls(camera, renderer.domElement)
 cameraControls.enabled = false
 cameraControls.setTarget(0,-15,0)
-$(document).keydown(function(e){
-	if(e.keyCode == 32){
-		cameraControls.enabled = true
-	}
-})
-$(document).keyup(function(e){
-	if(e.keyCode == 32){
-		cameraControls.enabled = false
-	}
-})
 
 // Used to track the angles of the camera (azimuthal is side-to-side and polar is up-down)
 var currentAzimuthalAngle = 0
@@ -71,7 +61,7 @@ var players = []
 
 // For storing the current player
 var currentPlayerIndex = 0
-var currentPlayer
+var currentPlayer, totalPlayers, remainingPlayers
 
 
 // ===========
@@ -109,45 +99,69 @@ function showAxis() {
 }
 
 // Moves the camera an angle of 90 degrees to the right
-window.rotate = function rotate() {
+function rotate() {
 	cameraControls.dampingFactor = 0.02
-	cameraControls.rotateTo(currentAzimuthalAngle+=Math.PI/2, currentPolarAngle, true)
-}
-
-// Moves the camera to the top (bird's eye view)
-window.viewFromTop = function() {
-	cameraControls.dampingFactor = 0.1
-	cameraControls.rotateTo(currentAzimuthalAngle, currentPolarAngle=0, true)
+	while ( Math.round(2*currentAzimuthalAngle/Math.PI) %4 != currentPlayer.rotation ) {
+		currentAzimuthalAngle += Math.PI/2
+	}
+	cameraControls.rotateTo(currentAzimuthalAngle, currentPolarAngle, true)
 }
 
 // Moves the camera to an angle of 45 degrees to the hroizontal
-window.viewFromSide = function() {
+function viewFromSide() {
 	cameraControls.dampingFactor = 0.1
 	cameraControls.rotateTo(currentAzimuthalAngle, currentPolarAngle=Math.PI/6, true)
+	$('#toggleView').text('View from Above')
+}
+
+// Moves the camera to( an angle of 45 degrees to the hroizontal
+function viewFromAbove() {
+	cameraControls.dampingFactor = 0.1
+	cameraControls.rotateTo(currentAzimuthalAngle, currentPolarAngle=0, true)
+	$('#toggleView').text('View from Side')
+}
+
+// Moves the camera to the top (bird's eye view)
+window.toggleView = function() {
+	if (currentPolarAngle == 0) {
+		viewFromSide()
+	}
+	else {
+		viewFromAbove()
+	}
 }
 
 function addPlayers() {
 	let urlp = parseURL()
 	// If 2 players
 	if (Object.keys(urlp).length == 2) {
-		players.push(new BLOKKUS.Player(urlp['Player+Blue'], BLUE))
-		layPlayerPieces(players[0], 0)
-		players.push(new BLOKKUS.Player(urlp['Player+Red'], RED))
-		layPlayerPieces(players[1], Math.PI)
+		players.push(new BLOKKUS.Player(urlp['Player+Blue'], BLUE, 0))
+		layPlayerPieces(players[0])
+		players.push(new BLOKKUS.Player(urlp['Player+Red'], RED, 2))
+		layPlayerPieces(players[1])
+
+		totalPlayers = 2
+		remainingPlayers = totalPlayers
 	}
 	// If 3 players
 	else {
-		players.push(new BLOKKUS.Player(urlp['Player+Blue'], BLUE))
-		layPlayerPieces(players[0], 0)
-		players.push(new BLOKKUS.Player(urlp['Player+Red'], RED))
-		layPlayerPieces(players[1], Math.PI/2)
-		players.push(new BLOKKUS.Player(urlp['Player+Green'], GREEN))
-		layPlayerPieces(players[2], Math.PI)
+		players.push(new BLOKKUS.Player(urlp['Player+Blue'], BLUE, 0))
+		layPlayerPieces(players[0])
+		players.push(new BLOKKUS.Player(urlp['Player+Red'], RED, 1))
+		layPlayerPieces(players[1])
+		players.push(new BLOKKUS.Player(urlp['Player+Green'], GREEN, 2))
+		layPlayerPieces(players[2])
+
+		totalPlayers = 3
+		remainingPlayers = totalPlayers
 	}	
 	// If 4 players
 	if (Object.keys(urlp).length == 4) {
-		players.push(new BLOKKUS.Player(urlp['Player+Yellow'], YELLOW))
-		layPlayerPieces(players[3], 3*Math.PI/2)
+		players.push(new BLOKKUS.Player(urlp['Player+Yellow'], YELLOW, 3))
+		layPlayerPieces(players[3])
+
+		totalPlayers = 4
+		remainingPlayers = totalPlayers
 	}
 }
 
@@ -186,138 +200,51 @@ function createPieceMesh(piece, color) {
 	})
 }
 
-// Lays each piece is front of the player (beware: long, hard-coded function)
+// Lays each piece is front of the player
 // Takes a rotation (which side of the board to put it on) - either 0, PI/2, PI, or 3PI/2
-function layPlayerPieces(player, rotation) {
+function layPlayerPieces(player) {
 
-	let rotatedMatrix = new THREE.Matrix4().makeRotationY(rotation)
+	let rotatedMatrix = new THREE.Matrix4().makeRotationY(player.rotation*Math.PI/2)
 
-	createPieceMesh(player.pieces[0], player.color).then( (mesh) => {
-		player.pieces[0].mesh = mesh
-		player.pieces[0].mesh.position.set(5.5,-0.5,15).applyMatrix4(rotatedMatrix)
-		player.pieces[0].mesh.rotation.y = rotation
-		scene.add(player.pieces[0].mesh)
-	})
-	createPieceMesh(player.pieces[1], player.color).then( (mesh) => {
-		player.pieces[1].mesh = mesh
-		player.pieces[1].mesh.position.set(-6,-0.5,12).applyMatrix4(rotatedMatrix)
-		player.pieces[1].mesh.rotation.y = rotation
-		scene.add(player.pieces[1].mesh)
-	})
-	createPieceMesh(player.pieces[2], player.color).then( (mesh) => {
-		player.pieces[2].mesh = mesh
-		player.pieces[2].mesh.position.set(4,-0.5,15).applyMatrix4(rotatedMatrix)
-		player.pieces[2].mesh.rotation.y = rotation
-		scene.add(player.pieces[2].mesh)
-	})
-	createPieceMesh(player.pieces[3], player.color).then( (mesh) => {
-		player.pieces[3].mesh = mesh
-		player.pieces[3].mesh.position.set(3,-0.5,13.5).applyMatrix4(rotatedMatrix)
-		player.pieces[3].mesh.rotation.y = rotation
-		scene.add(player.pieces[3].mesh)
-	})
-	createPieceMesh(player.pieces[4], player.color).then( (mesh) => {
-		player.pieces[4].mesh = mesh
-		player.pieces[4].mesh.position.set(-2,-0.5,12).applyMatrix4(rotatedMatrix)
-		player.pieces[4].mesh.rotation.y = rotation
-		scene.add(player.pieces[4].mesh)
-	})
-	createPieceMesh(player.pieces[5], player.color).then( (mesh) => {
-		player.pieces[5].mesh = mesh
-		player.pieces[5].mesh.position.set(5.5,-0.5,17.5).applyMatrix4(rotatedMatrix)
-		player.pieces[5].mesh.rotation.y = rotation
-		scene.add(player.pieces[5].mesh)
-	})
-	createPieceMesh(player.pieces[6], player.color).then( (mesh) => {
-		player.pieces[6].mesh = mesh
-		player.pieces[6].mesh.position.set(-7.5,-0.5,10.5).applyMatrix4(rotatedMatrix)
-		player.pieces[6].mesh.rotation.y = rotation
-		scene.add(player.pieces[6].mesh)
-	})
-	createPieceMesh(player.pieces[7], player.color).then( (mesh) => {
-		player.pieces[7].mesh = mesh
-		player.pieces[7].mesh.position.set(2.5,-0.5,17.5).applyMatrix4(rotatedMatrix)
-		player.pieces[7].mesh.rotation.y = rotation
-		scene.add(player.pieces[7].mesh)
-	})
-	createPieceMesh(player.pieces[8], player.color).then( (mesh) => {
-		player.pieces[8].mesh = mesh
-		player.pieces[8].mesh.position.set(1.5,-0.5,11.5).applyMatrix4(rotatedMatrix)
-		player.pieces[8].mesh.rotation.y = rotation
-		scene.add(player.pieces[8].mesh)
-	})
-	createPieceMesh(player.pieces[9], player.color).then( (mesh) => {
-		player.pieces[9].mesh = mesh
-		player.pieces[9].mesh.position.set(-10.5,-0.5,12).applyMatrix4(rotatedMatrix)
-		player.pieces[9].mesh.rotation.y = rotation
-		scene.add(player.pieces[9].mesh)
-	})
-	createPieceMesh(player.pieces[10], player.color).then( (mesh) => {
-		player.pieces[10].mesh = mesh
-		player.pieces[10].mesh.position.set(8,-0.5,16).applyMatrix4(rotatedMatrix)
-		player.pieces[10].mesh.rotation.y = rotation
-		scene.add(player.pieces[10].mesh)
-	})
-	createPieceMesh(player.pieces[11], player.color).then( (mesh) => {
-		player.pieces[11].mesh = mesh
-		player.pieces[11].mesh.position.set(-3.5,-0.5,13.5).applyMatrix4(rotatedMatrix)
-		player.pieces[11].mesh.rotation.y = rotation
-		scene.add(player.pieces[11].mesh)
-	})
-	createPieceMesh(player.pieces[12], player.color).then( (mesh) => {
-		player.pieces[12].mesh = mesh
-		player.pieces[12].mesh.position.set(4,-0.5,11).applyMatrix4(rotatedMatrix)
-		player.pieces[12].mesh.rotation.y = rotation
-		scene.add(player.pieces[12].mesh)
-	})
-	createPieceMesh(player.pieces[13], player.color).then( (mesh) => {
-		player.pieces[13].mesh = mesh
-		player.pieces[13].mesh.position.set(6.5,-0.5,12.5).applyMatrix4(rotatedMatrix)
-		player.pieces[13].mesh.rotation.y = rotation
-		scene.add(player.pieces[13].mesh)
-	})
-	createPieceMesh(player.pieces[14], player.color).then( (mesh) => {
-		player.pieces[14].mesh = mesh
-		player.pieces[14].mesh.position.set(9.5,-0.5,12.5).applyMatrix4(rotatedMatrix)
-		player.pieces[14].mesh.rotation.y = rotation
-		scene.add(player.pieces[14].mesh)
-	})
-	createPieceMesh(player.pieces[15], player.color).then( (mesh) => {
-		player.pieces[15].mesh = mesh
-		player.pieces[15].mesh.position.set(-2,-0.5,16.5).applyMatrix4(rotatedMatrix)
-		player.pieces[15].mesh.rotation.y = rotation
-		scene.add(player.pieces[15].mesh)
-	})
-	createPieceMesh(player.pieces[16], player.color).then( (mesh) => {
-		player.pieces[16].mesh = mesh
-		player.pieces[16].mesh.position.set(-6,-0.5,14.5).applyMatrix4(rotatedMatrix)
-		player.pieces[16].mesh.rotation.y = rotation
-		scene.add(player.pieces[16].mesh)
-	})
-	createPieceMesh(player.pieces[17], player.color).then( (mesh) => {
-		player.pieces[17].mesh = mesh
-		player.pieces[17].mesh.position.set(-4.5,-0.5,16).applyMatrix4(rotatedMatrix)
-		player.pieces[17].mesh.rotation.y = rotation
-		scene.add(player.pieces[17].mesh)
-	})
-	createPieceMesh(player.pieces[18], player.color).then( (mesh) => {
-		player.pieces[18].mesh = mesh
-		player.pieces[18].mesh.position.set(-10,-0.5,14.5).applyMatrix4(rotatedMatrix)
-		player.pieces[18].mesh.rotation.y = rotation
-		scene.add(player.pieces[18].mesh)
-	})
-	createPieceMesh(player.pieces[19], player.color).then( (mesh) => {
-		player.pieces[19].mesh = mesh
-		player.pieces[19].mesh.position.set(0.5,-0.5,15).applyMatrix4(rotatedMatrix)
-		player.pieces[19].mesh.rotation.y = rotation
-		scene.add(player.pieces[19].mesh)
-	})
-	createPieceMesh(player.pieces[20], player.color).then( (mesh) => {
-		player.pieces[20].mesh = mesh
-		player.pieces[20].mesh.position.set(-8.5,-0.5,17).applyMatrix4(rotatedMatrix)
-		player.pieces[20].mesh.rotation.y = rotation
-		scene.add(player.pieces[20].mesh)
-	})
+	// x- and z- coordinates for all the pieces
+	let pos = {
+		0  : { x:6    , z:15.5 },	// i1
+		1  : { x:-5.5 , z:12.5 },	// i2
+		2  : { x:4.5  , z:15.5 },	// v3
+		3  : { x:3.5  , z:14   },	// I3
+		4  : { x:-1.5 , z:12.5 },	// O4
+		5  : { x:6    , z:18   },	// T4
+		6  : { x:-7   , z:11   },	// I4
+		7  : { x:3    , z:18   },	// L4
+		8  : { x:2    , z:12   },	// Z4
+		9  : { x:-10  , z:12.5 },	// L5
+		10 : { x:8.5  , z:16.5 },	// T5
+		11 : { x:-3   , z:14   },	// V5
+		12 : { x:4.5  , z:11.5 },	// N
+		13 : { x:7    , z:13   },	// Z5
+		14 : { x:10   , z:13   },	// I5
+		15 : { x:-1.5 , z:17   },	// P
+		16 : { x:-5.5 , z:15   },	// W
+		17 : { x:-4   , z:16.5 },	// U
+		18 : { x:-9.5 , z:15   },	// F
+		19 : { x:1    , z:15.5 },	// X
+		20 : { x:-8   , z:17.5 }	// Y
+	}
+
+	for (const [i, piece] of player.pieces.entries()) {
+		createPieceMesh(piece, player.color).then( (mesh) => {
+			piece.mesh = mesh
+			piece.mesh.position.set(pos[i].x,-0.5,pos[i].z).applyMatrix4(rotatedMatrix)
+			scene.add(piece.mesh)
+			
+			// Rotate the piece mesh
+			piece.mesh.rotation.y = player.rotation*Math.PI/2
+			
+			// Rotate the piece grid
+			piece.rotate(4-player.rotation) // '4-rotations' is to rotate the piece CCW
+		})
+	}
+
 }
 
 // TODO: Implement function that checks if valid position
@@ -328,7 +255,6 @@ function isValidPosition() {
 // Casts a shadow of the currentPiece on the studs
 // References the global variable mouseCoordinates
 function castPieceShadow() {
-
 	let color = INVALID_COLOR
 	if(isValidPosition()) {
 		color = VALID_COLOR
@@ -338,8 +264,8 @@ function castPieceShadow() {
 	for (const [k, row] of currentPiece.grid.entries()) {
 		for (const [i, stud] of row.entries()) {
 
-			let posX = i + 10 + currentStud.position.x - currentPiece.anchor_point[1]
-			let posZ = k + 10 + currentStud.position.z - currentPiece.anchor_point[0]
+			let posX = i + 10 + currentStud.position.x - 0.5 - currentPiece.anchor_point[1]
+			let posZ = k + 10 + currentStud.position.z - 0.5 - currentPiece.anchor_point[0]
 
 			if (stud == 1) {
 				try {
@@ -352,23 +278,58 @@ function castPieceShadow() {
 }
 
 function placePiece() {
-	currentPiece.mesh.position.set(currentStud.position.x, 2, currentStud.position.z)
-	dropPieceAnimation(currentPiece, 0)
+	scene.remove(currentPiece.mesh)
+	createPieceMesh(currentPiece, currentPlayer.color).then( (mesh) => {
+		currentPiece.mesh = mesh
+		scene.add(currentPiece.mesh)
+		currentPiece.mesh.position.set(currentStud.position.x, 2, currentStud.position.z)
+		dropPieceAnimation(currentPiece, 0)
+		currentPiece = null
+	})
 	currentPiece.isPlaced = true
+}
+
+function nextPlayer() {
+	do {
+		// Next player
+		currentPlayerIndex = ++currentPlayerIndex % totalPlayers
+		currentPlayer = players[currentPlayerIndex]
+		viewFromSide()
+		rotate()
+	} while (currentPlayer.continue != true && remainingPlayers > 0)
+}
+
+function gameEnd() {
+	// TODO: What to do when the game is over
+	viewFromAbove()
+}
+
+window.forfeit = function() {
+	currentPlayer.continue = false
+	remainingPlayers--
+
+	if (remainingPlayers > 1)
+		nextPlayer()
+	else if (remainingPlayers == 1) {
+		$('#forfeitBtn').text('Finish')
+		nextPlayer()
+	}
+	else
+		gameEnd()
 }
 
 function raisePieceAnimation(piece, height) {
 	let mesh = piece.mesh
 	mesh.position.y = (height+0.01)-(((height+0.01)-mesh.position.y)*0.95)
 	if (mesh.position.y < height)
-		requestAnimationFrame( () => {raisePieceAnimation(piece, height)})
+		piece.animationFrame = requestAnimationFrame( () => raisePieceAnimation(piece, height))
 }
 
 function dropPieceAnimation(piece, height) {
 	let mesh = piece.mesh
 	mesh.position.y = height+((mesh.position.y-height)*0.95)-0.001
 	if (mesh.position.y > height)
-		requestAnimationFrame( () => {dropPieceAnimation(piece, height)})
+		piece.animationFrame = requestAnimationFrame( () => dropPieceAnimation(piece, height))
 }
 
 
@@ -383,39 +344,71 @@ $(document).mousemove(function() {
 })
 
 $(document).click(function() {
-	// For placing a piece
-	if (isValidPosition() && currentPiece && currentStud) {
-		placePiece()
-		currentPiece = null
-		setTimeout( () => {
-			viewFromSide()
-			rotate()
-		}, 1500)
-		currentPlayerIndex = ++currentPlayerIndex % 4
-		currentPlayer = players[currentPlayerIndex]
-	}
+	raycasting: {
 
-	// For selecting/deselecting a piece
-	// Raycast the current player's pieces
-	for (const piece of currentPlayer.pieces) {
-		let intersected = raycaster.intersectObject(piece.mesh)[0]
-		// Raycasting found no object or object is already placed
-		if (!intersected || piece.isPlaced) {}
-		else {
-			if (currentPiece) {
-				var p = currentPiece
-				dropPieceAnimation(p, -0.5)
+		// For selecting/deselecting a piece
+		// Raycast the current player's pieces
+		for (const piece of currentPlayer.pieces) {
+
+			let intersected = raycaster.intersectObject(piece.mesh)[0]
+			// Raycasting found no piece or piece is already placed
+			if (!intersected || piece.isPlaced) {}
+			// Raycasting found an object
+			else { 
+				// If a piece is currently selected
+				if (currentPiece) {
+					// Break the loop if the clicked object is already the currentPiece
+					if (raycaster.intersectObject(currentPiece.mesh)[0]) {
+						break raycasting
+					}
+					// Cancel the animation of the previous current piece
+					cancelAnimationFrame(currentPiece.animationFrame)
+					// Drop the previous current piece
+					dropPieceAnimation(currentPiece, -0.5)
+				}
+				// Set the clicked piece to the new current piece
+				currentPiece = piece
+				// Raise the new current piece
+				currentPiece.animationFrame = requestAnimationFrame( () => raisePieceAnimation(currentPiece, 0.5))
+				// Break (i.e. don't raycast any other pieces)
+				break raycasting
 			}
-			currentPiece = piece
-			raisePieceAnimation(currentPiece, 1)
-			break
 		}
+
+		// If the player clicks on a stud
+		if (isValidPosition() && currentPiece && currentStud) {
+			placePiece()
+			if (remainingPlayers > 1)
+				setTimeout( () => nextPlayer(), 1500)
+		}
+
+		// If the player clicks on the board (not the studs)
+		else if (raycaster.intersectObject(boardMesh)[0]) {} // Do nothing
+
+		else if (currentPiece) {
+			cancelAnimationFrame(currentPiece.animationFrame)
+			dropPieceAnimation(currentPiece, -0.5)
+			currentPiece = null
+		}
+
 	}
+})
 
-	// For clicking on board (not the studs)
-	if (raycaster.intersectObject(boardMesh)[0]) {} // Do nothing
-
-
+$(document).keydown(function(e){
+	if(e.keyCode == 32){
+		cameraControls.enabled = true
+	}
+	if(e.keyCode == 90 && currentPiece){
+		currentPiece.rotate(1)
+	}
+	if(e.keyCode == 88 && currentPiece){
+		currentPiece.flip()
+	}
+})
+$(document).keyup(function(e){
+	if(e.keyCode == 32){
+		cameraControls.enabled = false
+	}
 })
 
 
@@ -461,7 +454,7 @@ loadGLTF('stud.glb').then((mesh) => {
 		for (let i = -10; i < 10; i++) {
 			let m = mesh.clone()
 			m.material = material.clone()
-			m.position.set(i,0,k)
+			m.position.set(i+0.5,0,k+0.5)
 			scene.add(m)
 			row.push(m)
 		}
@@ -476,7 +469,7 @@ currentPlayer = players[currentPlayerIndex]
 
 // Render or animate loop
 function animate() {
-	requestAnimationFrame(animate)
+	mainAnimationFrame = requestAnimationFrame(animate)
 
 	// Camera control and positioning
 	const delta = clock.getDelta()
@@ -520,7 +513,7 @@ function animate() {
 
 	renderer.render(scene,camera)
 }
-animate()
+var mainAnimationFrame = animate()
 
 
 })
