@@ -2,14 +2,26 @@
 <html>
 <head>
 	<title>Blokkus</title>
+	<!-- Icon -->
+	<link rel="icon" href="resources/static/icon.ico">
 	<!-- CSS -->
+	<link rel="stylesheet" href="resources/css/board.css">
 	<!-- Custom fonts -->
-	<!-- jQuery -->
-	<script src="/vendors/jquery/jquery-3.4.1.min.js"></script>
+	<link href="https://fonts.googleapis.com/css?family=Mako&display=swap" rel="stylesheet">
+	<!-- External Libraries -->
+	<script src="vendors/jquery/jquery-3.4.1.min.js"></script>
+	<script src="vendors/three/three.min.js"></script>
+	<script src="vendors/three/GLTFLoader.js"></script>
+	<script src="vendors/three/camera-controls.min.js"></script>
 	<!-- JS -->
-	<script src="/resources/js/board.js"></script>
+	<script type="module" src="resources/js/board.js"></script>
 </head>
 
 <body>
-	
+	<div class="floating container fixed-left">
+		<button id="toggleView" class="btn" onclick="toggleView()">View from Above</button>
+	</div>
+	<div class="floating container fixed-right">
+		<button id="forfeitBtn" class="btn btn-red" onclick="forfeit()">Forfeit</button>
+	</div>
 </body>
