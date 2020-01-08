@@ -1,3 +1,6 @@
+import * as THREE from '../../vendors/three/build/three.module.js'
+import { GLTFLoader } from '../../vendors/three/examples/jsm/loaders/GLTFLoader.js'
+
 export { Board }
 
 class Board {
@@ -35,7 +38,7 @@ class Board {
 		this.studs = []
 		
 		// GLTF loader (for importing 3D models)
-		this.loader = new THREE.GLTFLoader();
+		this.loader = new GLTFLoader();
 		this.loader.setPath('resources/static/');
 		new Promise( (resolve, reject) => {	
 			this.loader.load('stud.glb', (gltf) => {

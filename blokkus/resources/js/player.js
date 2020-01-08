@@ -1,3 +1,5 @@
+import * as THREE from '../../vendors/three/build/three.module.js'
+
 import { toRadians } from './math.js'
 import { Piece } from './piece.js'
 

@@ -1,3 +1,6 @@
+import * as THREE from '../../vendors/three/build/three.module.js'
+import { GLTFLoader } from '../../vendors/three/examples/jsm/loaders/GLTFLoader.js'
+
 export { Piece }
 
 // Class for piece 
@@ -15,7 +18,7 @@ class Piece {
 		this.grid = grid; // Actual piece as nested array
 		
 		//three.js stuff
-		this.loader = new THREE.GLTFLoader(); // GLTF loader (for importing 3D models)
+		this.loader = new GLTFLoader(); // GLTF loader (for importing 3D models)
 		this.loader.setPath('resources/static/');
 		this.mesh // The 3D mesh associated with the piece
 		this.isPlaced = false; // If piece is currently on or off the board
@@ -43,6 +46,9 @@ class Piece {
 			let old_rows = this.rows;
 			this.rows = this.columns;
 			this.columns = old_rows;
+
+			this.bottom = (this.rows - 2); // Bottom position
+			this.right = (this.columns - 2); // Right position
 
 			this.grid = new_grid; // New grid
 		}

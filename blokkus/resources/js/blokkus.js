@@ -1,3 +1,5 @@
+import * as THREE from '../../vendors/three/build/three.module.js'
+
 import { Board } from './board.js'
 import { Player } from './player.js'
 import { toRadians } from './math.js'
@@ -20,8 +22,9 @@ const YELLOW = 0x999900
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
 camera.position.set(0,14.5,17)
-const renderer = new THREE.WebGLRenderer({ antialias: true , alpha:true })
-renderer.setClearColor(0x000000, 0.0)
+const renderer = new THREE.WebGLRenderer({ antialias:true , alpha:true })
+renderer.setClearColor(0xffffff, 0.0)
+renderer.setSize(window.innerWidth, window.innerHeight)
 
 // Camera cameraControls
 const clock = new THREE.Clock()
@@ -163,6 +166,23 @@ function addPlayers() {
 
 // TODO: Implement function that checks if valid position
 function isValidPosition() {
+	let piece = currentPiece
+	let row = 10 + currentStud.position.x - 0.5
+	let column = 10 + currentStud.position.z - 0.5
+	console.log(row, column)
+
+	if ((row - (piece.anchor_point[0] - piece.top)) < 0) { // If the piece is not greater than 0 (rows)
+		return false
+	}
+	if (19 < (row + (piece.bottom - piece.anchor_point[0]))) { // If the piece is not greater than 0 (columns)
+		return false
+	}
+	if ((column - (piece.anchor_point[1] - piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
+		return false
+	}
+	if (19 < (column + (piece.right - piece.anchor_point[1]))) { // If the piece is not less than or equal to 19 (columns)
+		return false
+	}
 	return true
 }
 
@@ -331,7 +351,7 @@ $(document).click(function() {
 		}
 
 		// If the player clicks on a stud
-		if (isValidPosition() && currentPiece && currentStud) {
+		if (currentPiece && currentStud && isValidPosition()) {
 			currentPlayer.score += currentPiece.score
 			if (remainingPlayers > 1) {
 				placePiece().then(nextPlayer)
@@ -419,12 +439,13 @@ function animate() {
 			let intersected = raycaster.intersectObject(piece.mesh)[0]
 			// Raycasting found no object or object is already placed
 			if (!intersected || piece.isPlaced) {}
-			else
+			else {
 				$('body').css('cursor', 'pointer')
+			}
 		}
 	}
 
-	renderer.render(scene,camera)
+	renderer.render(scene, camera)
 }
 mainAnimationFrame = animate()
 
