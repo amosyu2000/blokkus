@@ -13,8 +13,9 @@ class Piece {
 		this.right = (columns - 2); // Right position
 		this.score = score; // Number of tiles within piece
 		this.grid = grid; // Actual piece as nested array
+		
 		//three.js stuff
-		this.loader = new THREE.GLTFLoader();
+		this.loader = new THREE.GLTFLoader(); // GLTF loader (for importing 3D models)
 		this.loader.setPath('resources/static/');
 		this.mesh // The 3D mesh associated with the piece
 		this.isPlaced = false; // If piece is currently on or off the board

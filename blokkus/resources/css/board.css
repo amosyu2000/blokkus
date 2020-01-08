@@ -24,7 +24,6 @@ img {height:1.5rem; vertical-align:middle;}
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	align-items: center;
 }
 .h-flex {
 	display: flex;
@@ -32,6 +31,8 @@ img {height:1.5rem; vertical-align:middle;}
 	justify-content: center;
 	align-items: center;
 }
+.align-left {align-items: flex-start;}
+.align-right {align-items: flex-end;}
 .inline {display:inline;}
 
 

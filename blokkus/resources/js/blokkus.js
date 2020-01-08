@@ -1,172 +1,432 @@
-// Function to check wether piece placement is in bounds
-function in_bounds(a_piece, row, column, grid) {
-	state = true; // State to be returned false if any of the tests fail
-	if ((row - (a_piece.index_point[0] - a_piece.top)) < 0) { // If the piece is not greater than 0 (rows)
-		state = false;
+import { Board } from './board.js'
+import { Player } from './player.js'
+import { toRadians } from './math.js'
+
+// ===========
+//  CONSTANTS
+// ===========
+
+const RED = 0x880011
+const GREEN = 0x117722
+const BLUE = 0x003388
+const YELLOW = 0x999900
+
+
+// ==================
+//  GLOBAL VARIABLES
+// ==================
+
+// Scene, camera, and renderer
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000)
+camera.position.set(0,14.5,17)
+const renderer = new THREE.WebGLRenderer({ antialias: true , alpha:true })
+renderer.setClearColor(0x000000, 0.0)
+
+// Camera cameraControls
+const clock = new THREE.Clock()
+CameraControls.install( { THREE: THREE } )
+const cameraControls = new CameraControls(camera, renderer.domElement)
+cameraControls.setTarget(0,-15,0)
+cameraControls.minDistance = 25
+cameraControls.maxDistance = 40
+cameraControls.mouseButtons.left = CameraControls.ACTION.NONE
+cameraControls.mouseButtons.right = CameraControls.ACTION.NONE
+
+// Used to track the angles of the camera (azimuthal is side-to-side and polar is up-down)
+// In degrees
+var currentAzimuthalAngle = 0
+var currentPolarAngle = 30
+
+// For raycasting
+const raycaster = new THREE.Raycaster()
+
+// For storing the mouse position on a scale from -1 to +1
+var mouse = new THREE.Vector2()
+
+// For storing the board
+var board = new Board(scene)
+
+// For storing the stud that is currently being hovered over
+var currentStud
+
+// For storing the currently selected piece
+var currentPiece
+
+// Array from storing the players
+var players = []
+
+// For storing the current player
+var currentPlayerIndex = 0
+var currentPlayer, totalPlayers, remainingPlayers
+
+var mainAnimationFrame
+
+
+// ===========
+//  FUNCTIONS
+// ===========
+
+// Retrieves all the passed parameters from the URL and puts them in a dictionary
+function parseURL() {
+	let urlp = []
+	let s = location.toString().split('?')
+	s = s[1].split('&')
+	for(let i = 0; i < s.length; i++) {
+		let u = s[i].split('=')
+		u[0] = u[0].split('+').join(' ')
+		urlp[u[0]] = u[1]
 	}
-	if (19 < (row + (a_piece.bottom - a_piece.index_point[0]))) { // If the piece is not greater than 0 (columns)
-		state = false;
+	for (const key in urlp) {
+		if (urlp[key] == '') {
+			urlp[key] = key
+		}
 	}
-	if ((column - (a_piece.index_point[1] - a_piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
-		state = false;
-	}
-	if (19 < (column + (a_piece.right - a_piece.index_point[1]))) { // If the piece is not less than or equal to 19 (columns)
-		state = false;
-	}
-	return state;
+	return urlp
 }
 
-// Function to place the first piece in a corner of the grid
-function first_piece(a_piece, row, column, grid) {
-	let filled_corner = false; // Boolean to check if corner piece touches corner and has tile value 1
-	if (in_bounds(a_piece, row, column, grid)) { // If the piece is in bounds
-		if ((a_piece.index_point[0] - a_piece.top) == row) { 
-			if ((a_piece.index_point[1] - a_piece.left) == column) { // If the piece is in the top left corner
-				if (a_piece.grid[a_piece.top][a_piece.left] == 1) {
-					filled_corner = true;
-				}
-			}
-			else if ((a_piece.right - a_piece.index_point[1]) == (19 - column)) { // If the piece is in the bottom left corner
-				if (a_piece.grid[a_piece.top][a_piece.right] == 1) {
-					filled_corner = true;
-				}
-			}
-		}
-		else if ((a_piece.bottom - a_piece.index_point[0]) == (19 - row)) { // If the piece is in the top right corner
-			if ((a_piece.index_point[1] - a_piece.left) == column) {
-				if (a_piece.grid[a_piece.bottom][a_piece.left] == 1) {
-					filled_corner = true;
-				}
-			}
-			else if ((a_piece.right - a_piece.index_point[1]) == (19 - column)) { // If the piece is in the bottom right corner
-				if (a_piece.grid[a_piece.bottom][a_piece.right] == 1) {
-					filled_corner = true;
-				}
-			}
-		}
+// Moves the camera an angle of 90 degrees to the right
+function rotate(enableTransition) {
+	cameraControls.dampingFactor = 0.02
+	
+	while ( currentAzimuthalAngle % 360 != currentPlayer.angle ) {
+		currentAzimuthalAngle += 45
 	}
-	return filled_corner;
+
+	cameraControls.rotateTo( toRadians(currentAzimuthalAngle) , toRadians(currentPolarAngle) , enableTransition)
 }
 
-// Function to build the first pieces
-function place_piece(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
-	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
-	for (let i = 0; i < a_piece.rows; i++) {
-		for (let j = 0; j < a_piece.columns; j++) {
-			if (a_piece.grid[i][j] == 1) { // If tile of piece is a filled tile
-				grid[row_start + i][column_start + j] = player.color; // Replace grid 0 with letter of player color
-			}
-		}
+// Moves the camera to an angle of 45 degrees to the hroizontal
+function viewFromSide() {
+	cameraControls.dampingFactor = 0.1
+	cameraControls.rotateTo( toRadians(currentAzimuthalAngle) , toRadians(currentPolarAngle=30) , true)
+	$('#toggleView').text('View from Above')
+}
+
+// Moves the camera to( an angle of 45 degrees to the hroizontal
+function viewFromAbove() {
+	cameraControls.dampingFactor = 0.1
+	cameraControls.rotateTo( toRadians(currentAzimuthalAngle) , toRadians(currentPolarAngle=0) , true)
+	$('#toggleView').text('View from Side')
+}
+
+// Moves the camera to the top (bird's eye view)
+window.toggleView = function() {
+	if (currentPolarAngle == 0) {
+		viewFromSide()
+	}
+	else {
+		viewFromAbove()
 	}
 }
 
-// Function to check if the area is a valid area to put a piece
-function area_check(a_piece, row, column, grid, player) {
-	let row_start = row - a_piece.index_point[0]; // Distance from piece index and top of piece
-	let column_start = column - a_piece.index_point[1]; // Distance from piece index and left side of piece
-	let not_touching = true; // Boolean if piece is touching another piece on its side of the same color 
-	let is_corner = false; // Boolean if piece's corner is touching another piece's corner of the same color
-	let is_zero = true; // Boolean if the piece is not covering an occupied tile of the grid
-	for (let i = 0; i < a_piece.rows; i++) {
-		for (j = 0; j < a_piece.columns; j++) {
-			if ((a_piece.grid[i][j] == 0) && (grid[row_start + i][column_start + j] == player.color)) {
-				not_touching = false;
-			}
-			if ((a_piece.grid[i][j] == -1) && (grid[row_start + i][column_start + j] == player.color)) {
-				is_corner = true;
-			}
-			if ((a_piece.grid[i][j] == 1) && (grid[row_start + i][column_start + j] != 0)) {
-				is_zero = false;
-			}
-		}
-	}
-	return ((is_corner) && (is_zero) && (not_touching));
+function addPieceSetToScene(pieces) {
+	for (const piece of pieces)
+		scene.add(piece.mesh)
 }
 
+function addPlayers() {
+	let urlp = parseURL()
+	// If 2 players
+	if (Object.keys(urlp).length == 2) {
+		players.push(new Player(urlp['Player Blue'], BLUE, 45))
+		players[0].addNewPieceSet(0).then( (pieces) => addPieceSetToScene(pieces))
+		players[0].addNewPieceSet(90).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(urlp['Player Red'], RED, 225))
+		players[1].addNewPieceSet(180).then( (pieces) => addPieceSetToScene(pieces))
+		players[1].addNewPieceSet(270).then( (pieces) => addPieceSetToScene(pieces))
 
-// Main function for game
-function blokkus() {
-	let grid = []; //Create 20 by 20 grid
-	let row = 0;
-	let column = 0;
-	let player_list = []
-	let piece_num = 0;
-	let pass = true;
-	let game_state = true
-	for (let i = 0; i < 20; i++) {
-		grid[i] = [];
-		for (let j = 0; j < 20; j++) {
-			grid[i][j] = 0;
-		}
+		totalPlayers = 2
+		remainingPlayers = totalPlayers
 	}
-	let num_players = window.prompt("How many players are there?: "); //Get the number of players
-	if (num_players == 2) {	
-		let player_1 = new Player("B"); // Creater player 1
-		let player_2 = new Player("R"); // Creater player 2
-		player_1.pieces = player_1.pieces.concat(player_1.pieces); // Add extra pieces (since only 2 players)
-		player_2.pieces = player_2.pieces.concat(player_2.pieces); // Add extra pieces (since only 2 players)
-		player_list = [player_1, player_2]; // Create player list
-		game_state = (player_1.continue || player_2.continue); // Create boolean for game state
+	// If 3 players
+	else {
+		players.push(new Player(urlp['Player Blue'], BLUE, 0))
+		players[0].addNewPieceSet(0).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(urlp['Player Red'], RED, 90))
+		players[1].addNewPieceSet(90).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(urlp['Player Green'], GREEN, 180))
+		players[2].addNewPieceSet(180).then( (pieces) => addPieceSetToScene(pieces))
+
+		totalPlayers = 3
+		remainingPlayers = totalPlayers
+	}	
+	// If 4 players
+	if (Object.keys(urlp).length == 4) {
+		players.push(new Player(urlp['Player Yellow'], YELLOW, 270))
+		players[3].addNewPieceSet(270).then( (pieces) => addPieceSetToScene(pieces))
+
+		totalPlayers = 4
+		remainingPlayers = totalPlayers
 	}
-	else if (num_players == 3) {
-		let player_1 = new Player("B"); // Creater player 1
-		let player_2 = new Player("R"); // Creater player 2
-		let player_3 = new Player("Y"); // Creater player 3
-		player_list = [player_1, player_2, player_3]; // Create player list
-		game_state = (player_1.continue || player_2.continue || player_3.continue); // Create boolean for game state
+}
+
+// TODO: Implement function that checks if valid position
+function isValidPosition() {
+	return true
+}
+
+// Casts a shadow of the currentPiece on the studs
+// References the global variable mouseCoordinates
+function castPieceShadow() {
+	let color = board.INVALID_COLOR
+	if(isValidPosition()) {
+		color = board.VALID_COLOR
+		$('body').css('cursor', 'pointer')
 	}
-	else if (num_players == 4) {
-		let player_1 = new Player("B"); // Creater player 1
-		let player_2 = new Player("R"); // Creater player 2
-		let player_3 = new Player("Y"); // Creater player 3
-		let player_4 = new Player("G"); // Creater player 4
-		player_list = [player_1, player_2, player_3, player_4]; // Create player list
-		game_state = (player_1.continue || player_2.continue || player_3.continue || player_4.continue); // Create boolean for game state
-	}
-	for (let i = 0; i < player_list.length; i++) { // For loop for each player to place their first piece
-		do {
-			row = parseInt(window.prompt("Player " + i.toString() + ": Row [0 - 19]: "), 10);
-			column = parseInt(window.prompt("Player " + i.toString() + ": Column [0 - 19]: "), 10);
-			piece_num = window.prompt("Which piece number you want to put: ");
-			pass = first_piece(player_list[i].pieces[piece_num - 1], row, column, grid);
-			if (pass == false) {
-				console.log("Invalid first piece, please try again.");
+
+	for (const [k, row] of currentPiece.grid.entries()) {
+		for (const [i, stud] of row.entries()) {
+
+			let posX = i + 10 + currentStud.position.x - 0.5 - currentPiece.anchor_point[1]
+			let posZ = k + 10 + currentStud.position.z - 0.5 - currentPiece.anchor_point[0]
+
+			if (stud == 1) {
+				try {
+					board.studs[posZ][posX].material.color.set(color)
+				}
+				catch(e){}
 			}
 		}
-		while (pass == false);
-		place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
-		player_list[i].pieces[piece_num - 1] = 0;
-		console.log(grid);
-		console.log(player_list[i].pieces);
-		pass = true;
 	}
+}
+
+// Place the piece on the board (essentially deletes the mesh and creates a new one)
+function placePiece() {
+	scene.remove(currentPiece.mesh)
+	currentPiece.mesh.geometry.dispose()
+
+	currentPiece.isPlaced = true
+
+	// Return a promise with the dropPieceAnimation promise chained to it
+	return currentPiece.createPieceMesh(currentPlayer.color).then( (mesh) => {
+		scene.add(currentPiece.mesh)
+		currentPiece.mesh.position.set(currentStud.position.x, 2, currentStud.position.z)
+	}).then ( () => {
+		let p = currentPiece
+		currentPiece = null
+		return dropPieceAnimation(p, 0)
+	})
+}
+
+function nextPlayer() {
 	do {
-		for (let i = 0; i < player_list.length; i++) {
-			if (player_list[i].continue == true) {
-				turn_input = window.prompt("Player " + i.toString() + " please make a decision (place a piece: 1 or concede: 2)");
-				if (turn_input == 1) {
-					do {
-						row = parseInt(window.prompt("Player " + i.toString() + ": Row [0 - 19]: "), 10);
-						column = parseInt(window.prompt("Player " + i.toString() + ": Column [0 - 19]: "), 10);
-						piece_num = window.prompt("Which piece number you want to put: ");
-						pass = area_check(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
-						if (pass == false) {
-							console.log("Invalid piece placement, please try again.");
-						}
-					}
-					while (pass == false);
-					place_piece(player_list[i].pieces[piece_num - 1], row, column, grid, player_list[i]);
-					player_list[i].pieces[piece_num - 1] = 0;
-					console.log(grid);
-					console.log(player_list[i].pieces);
-					pass = true;
-				}
-				else {
-					player_list[i].continue = false;
-				}
+		// Next player
+		currentPlayerIndex = ++currentPlayerIndex % totalPlayers
+		currentPlayer = players[currentPlayerIndex]
+		viewFromSide()
+		rotate(true)
+	} while (currentPlayer.continue != true && remainingPlayers > 0)
+}
+
+function gameEnd() {
+	// TODO: What to do when the game is over
+
+	currentPlayer = null
+	currentAzimuthalAngle -= currentAzimuthalAngle % 90
+	cameraControls.dampingFactor = 0.02
+	cameraControls.rotateTo( toRadians(currentAzimuthalAngle) , 0, true)
+}
+
+function raisePieceAnimation(piece, height) {
+	let mesh = piece.mesh
+	
+	return new Promise( (resolve,reject) => {		
+		let animationFrame = function() {	
+			mesh.position.y = (height+0.01)-(((height+0.01)-mesh.position.y)*0.95)
+			if (mesh.position.y < height)
+				piece.animationFrame = requestAnimationFrame(animationFrame)
+			else {
+				resolve()
 			}
 		}
-	}
-	while (game_state == true);
+		animationFrame()
+	})
 }
+
+function dropPieceAnimation(piece, height) {
+	let mesh = piece.mesh
+
+	return new Promise( (resolve,reject) => {
+		let animationFrame = function() {
+			mesh.position.y = height+((mesh.position.y-height)*0.95)-0.001
+			if (mesh.position.y > height)
+				piece.animationFrame = requestAnimationFrame(animationFrame)
+			else {
+				resolve()
+			}
+		}
+		animationFrame()
+	})
+}
+
+window.forfeit = function() {
+	currentPlayer.continue = false
+	remainingPlayers--
+
+	if (currentPiece) {
+		cancelAnimationFrame(currentPiece.animationFrame)
+		dropPieceAnimation(currentPiece, -0.5)
+		currentPiece = null
+	}
+
+	if (remainingPlayers > 1)
+		nextPlayer()
+	else if (remainingPlayers == 1) {
+		$('#forfeitBtn').text('Finish')
+		nextPlayer()
+	}
+	else
+		gameEnd()
+}
+
+
+// ===========
+//  LISTENERS
+// ===========
+
+$(document).mousemove(function() {
+	// Calculates and stores mouse position on a scale from -1 to +1
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+})
+
+$(document).click(function() {
+	raycasting: {
+
+		// Do nothing if the user clicks when it isn't a player's turn
+		if (!currentPlayer)
+			break raycasting
+
+		// For selecting/deselecting a piece
+		// Raycast the current player's pieces
+		for (const piece of currentPlayer.pieces) {
+
+			let intersected = raycaster.intersectObject(piece.mesh)[0]
+			// Raycasting found no piece or piece is already placed
+			if (!intersected || piece.isPlaced) {}
+			// Raycasting found an object
+			else { 
+				// If a piece is currently selected
+				if (currentPiece) {
+					// Deselect the currentPiece if it is the clicked object
+					if (raycaster.intersectObject(currentPiece.mesh)[0]) {
+						cancelAnimationFrame(currentPiece.animationFrame)
+						dropPieceAnimation(currentPiece, -0.5)
+						currentPiece = null
+						break raycasting
+					}
+					// Drop the previous current piece
+					cancelAnimationFrame(currentPiece.animationFrame)
+					dropPieceAnimation(currentPiece, -0.5)
+				}
+				// Set the clicked piece to the new current piece
+				currentPiece = piece
+				// Raise the new current piece
+				cancelAnimationFrame(currentPiece.animationFrame)
+				currentPiece.animationFrame = raisePieceAnimation(currentPiece, 0.5)
+				// Break (i.e. don't raycast any other pieces)
+				break raycasting
+			}
+		}
+
+		// If the player clicks on a stud
+		if (isValidPosition() && currentPiece && currentStud) {
+			currentPlayer.score += currentPiece.score
+			if (remainingPlayers > 1) {
+				placePiece().then(nextPlayer)
+				currentPlayer = null
+			}
+			else {
+				placePiece()
+			}
+		}
+
+		// If the player clicks on the board (not the studs)
+		else if (raycaster.intersectObject(board.mesh)[0]) {} // Do nothing
+
+	}
+})
+
+$(document).keydown(function(e){
+	if(e.keyCode == 90 && currentPiece){
+		currentPiece.rotate(1)
+	}
+	if(e.keyCode == 88 && currentPiece){
+		currentPiece.flip()
+	}
+})
+
+
+// ================
+//	DOCUMENT READY
+// ================
+
+$(document).ready(function() {
+
+
+// Set the size of the renderer and add it to the HTML
+renderer.setSize(window.innerWidth, window.innerHeight)
+$('body').append(renderer.domElement)
+
+//Scene lighting
+var ambientLight = new THREE.AmbientLight (0xffffff, 1)
+scene.add(ambientLight)
+var pointLight = new THREE.PointLight(0xffffff, 0.5)
+pointLight.position.set(0,20,0)
+scene.add(pointLight)
+
+// Add players and players' pieces
+addPlayers()
+currentPlayer = players[currentPlayerIndex]
+rotate(false)
+
+
+// Render or animate loop
+function animate() {
+	mainAnimationFrame = requestAnimationFrame(animate)
+
+	// Camera control and positioning
+	const delta = clock.getDelta()
+	cameraControls.update(delta)
+
+	// Set every stud to white
+	currentStud = null
+	board.clean()
+
+	// Reset mouse cursor type
+	$('body').css('cursor', 'default')
+
+	// Raycasting
+	raycaster.setFromCamera(mouse,camera)
+
+	// Raycast studs
+	for (const row of board.studs) {
+		// intersectObjects returns an array of intersected objects
+		let intersected = raycaster.intersectObjects(row)[0]
+		// Raycasting found no objects
+		if (!intersected) {} 
+		// Only display piece shadow if a piece is selected
+		else if (currentPiece) {
+			currentStud = intersected.object
+			castPieceShadow()
+		}
+	}
+
+	// Raycast the current player's pieces
+	if (currentPlayer) {
+		for (const piece of currentPlayer.pieces) {
+			let intersected = raycaster.intersectObject(piece.mesh)[0]
+			// Raycasting found no object or object is already placed
+			if (!intersected || piece.isPlaced) {}
+			else
+				$('body').css('cursor', 'pointer')
+		}
+	}
+
+	renderer.render(scene,camera)
+}
+mainAnimationFrame = animate()
+
+
+})

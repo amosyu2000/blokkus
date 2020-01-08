@@ -15,24 +15,24 @@
 	<script src="vendors/three/GLTFLoader.js"></script>
 	<script src="vendors/three/camera-controls.min.js"></script>
 	<!-- JS -->
-	<script type="module" src="resources/js/board.js"></script>
+	<script type="module" src="resources/js/blokkus.js"></script>
 </head>
 
 <body>
-	<div class="floating container v-flex fixed-right fixed-top">
+	<div class="floating container v-flex align-right fixed-right fixed-top">
+		<a href="https://www.ultraboardgames.com/blokus/game-rules.php" target="_blank">Rules of the game</a>
 		<div class="v-flex inline">
 			<img src="resources/static/github_logo.png" alt="Github Logo">		
 			<a href="https://github.com/amosyu2000/blokkus" target="_blank">Code</a>
 		</div>
-		<a href="https://www.ultraboardgames.com/blokus/game-rules.php" target="_blank">Rules of the game</a>
 	</div>
-	<div class="floating container v-flex fixed-left fixed-bottom">
+	<div class="floating container v-flex align-left fixed-left fixed-bottom">
 		<p>[Z] Rotate Piece</p>
 		<p>[X] Flip Piece</p>
 		<p>[Scroll] Zoom In/Out</p>
 		<button id="toggleView" class="btn" onclick="toggleView()">View from Above</button>
 	</div>
-	<div class="floating container v-flex fixed-right fixed-bottom">
+	<div class="floating container v-flex align-right fixed-right fixed-bottom">
 		<button id="forfeitBtn" class="btn btn-red" onclick="forfeit()">Forfeit</button>
 	</div>
 </body>
