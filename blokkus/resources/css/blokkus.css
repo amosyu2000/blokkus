@@ -1,4 +1,4 @@
-body {margin:0; overflow:hidden; position:relative; background-image:radial-gradient(circle 760px at 50.7% 60.5%, #263240 0%, black 100% );};
+body {margin:0; overflow:hidden; position:relative; background-image:radial-gradient(circle 760px at 50.7% 60.5%, #303f50 0%, #131920 100% );};
 canvas {width:100%; height:100%;}
 p, a, button, div {margin: 0.3rem;}
 p, a, button {font-family:'Mako'; font-size:1rem; color:white;} button:focus{outline:0;}
@@ -8,7 +8,7 @@ img {height:1.5rem; vertical-align:middle;}
 .floating {position:absolute; z-index:1;}
 
 /* Buttons with the white borders */
-.btn {background-color:rgba(0,0,0,0.5); padding:0.7rem; transition:all 0.25s; border:0.15rem solid white; border-radius: 0.4rem; cursor:pointer;}
+.btn {background-color:rgba(0,0,0,0.3); padding:0.7rem; transition:all 0.25s; border:0.15rem solid white; border-radius: 0.4rem; cursor:pointer;}
 .btn:hover {background-color:white; color:black; font-weight: bolder;}
 
 .btn-red {color:indianred; font-weight: bolder; border:0.15rem solid indianred;} .btn-red:hover {background-color:indianred;}

@@ -167,9 +167,8 @@ function addPlayers() {
 // TODO: Implement function that checks if valid position
 function isValidPosition() {
 	let piece = currentPiece
-	let row = 10 + currentStud.position.x - 0.5
-	let column = 10 + currentStud.position.z - 0.5
-	console.log(row, column)
+	let column = 10 + currentStud.position.x - 0.5
+	let row = 10 + currentStud.position.z - 0.5
 
 	if ((row - (piece.anchor_point[0] - piece.top)) < 0) { // If the piece is not greater than 0 (rows)
 		return false

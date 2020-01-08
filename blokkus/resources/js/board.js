@@ -36,6 +36,7 @@ class Board {
 
 		// A 2-dimensional array for storing the game board studs (20x20)
 		this.studs = []
+		this.cornerStuds = {}
 		
 		// GLTF loader (for importing 3D models)
 		this.loader = new GLTFLoader();
@@ -61,6 +62,11 @@ class Board {
 				}
 				this.studs.push(row)
 			}
+
+			this.cornerStuds[45] = this.studs[19][19]
+			this.cornerStuds[135] = this.studs[0][19]
+			this.cornerStuds[225] = this.studs[0][0]
+			this.cornerStuds[315] = this.studs[19][0]
 		})
 	}
 

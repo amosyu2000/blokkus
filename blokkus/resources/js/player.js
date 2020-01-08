@@ -13,6 +13,7 @@ class Player {
 		this.angle = angle; // Where the player is sitting around the table in degrees
 		this.score = 0; // Player score
 		this.continue = true; // Forfeit status
+		this.openingStud; // The corner stud that the player starts off on
 		this.pieces = [];
 	}
 
