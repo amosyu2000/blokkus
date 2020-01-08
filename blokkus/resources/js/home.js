@@ -1,3 +1,5 @@
+import { randInt , toHundred } from './math.js'
+
 // ===========
 //  CONSTANTS
 // ===========
@@ -22,15 +24,7 @@ var savedPlayerNames = ['','','',''];
 //  FUNCTIONS
 // ===========
 
-// Random Integer (min inclusive, max exclusive)
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min) ) + min;
-}
 
-// Rounds to nearest hundred
-function toHundred(num) {
-	return Math.round(num/100)*100;
-}
 
 // Called when the "amount of players" buttons are pressed
 function playerSelect(players) {
@@ -58,6 +52,7 @@ function playerSelect(players) {
 			break;
 	}
 }
+window.playerSelect = playerSelect;
 
 // Saves the player names when any text input is edited
 function savePlayerName(num) {
@@ -65,6 +60,7 @@ function savePlayerName(num) {
 	let input = $(`.text-input[oninput="savePlayerName(${num})"]`);
 	savedPlayerNames[num] = input.val();
 }
+window.savePlayerName = savePlayerName;
 
 // Function to construct the upside-down trapezoid text boxes
 function evenPlayerBox(num, color, hint) {

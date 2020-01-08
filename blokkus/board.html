@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>Blokkus</title>
 	<!-- Icon -->
@@ -18,10 +19,22 @@
 </head>
 
 <body>
-	<div class="floating container fixed-left">
+	<div class="floating container v-flex fixed-right fixed-top">
+		<div class="v-flex inline">
+			<img src="resources/static/github_logo.png" alt="Github Logo">		
+			<a href="https://github.com/amosyu2000/blokkus" target="_blank">Code</a>
+		</div>
+		<a href="https://www.ultraboardgames.com/blokus/game-rules.php" target="_blank">Rules of the game</a>
+	</div>
+	<div class="floating container v-flex fixed-left fixed-bottom">
+		<p>[Z] Rotate Piece</p>
+		<p>[X] Flip Piece</p>
+		<p>[Scroll] Zoom In/Out</p>
 		<button id="toggleView" class="btn" onclick="toggleView()">View from Above</button>
 	</div>
-	<div class="floating container fixed-right">
+	<div class="floating container v-flex fixed-right fixed-bottom">
 		<button id="forfeitBtn" class="btn btn-red" onclick="forfeit()">Forfeit</button>
 	</div>
 </body>
+
+</html>
