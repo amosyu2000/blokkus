@@ -309,6 +309,13 @@ function gameEnd() {
 	// Remove all the html around the canvas
 	$('.floating').remove()
 	$('body').append(createLeaderboard(players))
+	$('body').append(`
+
+	<button id="forfeitBtn" class="floating container fixed-right fixed-bottom btn" onclick="location.reload()">
+		&#x21ba; Play Again
+	</button>
+	
+	`)
 	currentPlayer = null
 	currentAzimuthalAngle -= currentAzimuthalAngle % 90
 	cameraControls.dampingFactor = 0.02

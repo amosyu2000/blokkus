@@ -8,13 +8,13 @@ export function createLeaderboard(players) {
 	}
 
 	return `
-	<div class="floating fixed-top v-flex w-100 h-100">
+	<div id="leaderboard" class="floating fixed-top v-flex w-100 h-100">
 		<div class="container-white v-flex">
 			<p class="font-large text-black">Final Scores</p>
 			<div class="v-flex w-100 align-left">
 				${leaderboard}
 			</div>
-			<button class="btn" onclick="$('.floating').remove()">[X] Close</button>
+			<button class="btn" onclick="$('#leaderboard').remove()">[X] Close</button>
 		</div>
 	</div>
 	`
