@@ -53,6 +53,10 @@ var board = new Board(scene)
 // For storing the stud that is currently being hovered over
 var currentStud
 
+// For storing the current color of the blinking corner stud animation
+var currentBlinkColor = board.WHITE
+var colorIncrement = 0x020202
+
 // For storing the currently selected piece
 var currentPiece
 
@@ -60,10 +64,8 @@ var currentPiece
 var players = []
 
 // For storing the current player
-var currentPlayerIndex = 0
+var currentPlayerIndex = -1
 var currentPlayer, totalPlayers, remainingPlayers
-
-var mainAnimationFrame
 
 
 // ===========
@@ -80,6 +82,7 @@ function parseURL() {
 		u[0] = u[0].split('+').join(' ')
 		urlp[u[0]] = u[1]
 	}
+	// If no name is provided, set the value to the key (a generic name)
 	for (const key in urlp) {
 		if (urlp[key] == '') {
 			urlp[key] = key
@@ -115,74 +118,119 @@ function viewFromAbove() {
 
 // Moves the camera to the top (bird's eye view)
 window.toggleView = function() {
-	if (currentPolarAngle == 0) {
-		viewFromSide()
+	if (currentPlayer) {
+		if (currentPolarAngle == 0) {
+			viewFromSide()
+		}
+		else {
+			viewFromAbove()
+		}
 	}
-	else {
-		viewFromAbove()
-	}
-}
-
-function addPieceSetToScene(pieces) {
-	for (const piece of pieces)
-		scene.add(piece.mesh)
 }
 
 function addPlayers() {
 	let urlp = parseURL()
 	// If 2 players
 	if (Object.keys(urlp).length == 2) {
-		players.push(new Player(urlp['Player Blue'], BLUE, 45))
-		players[0].addNewPieceSet(0).then( (pieces) => addPieceSetToScene(pieces))
-		players[0].addNewPieceSet(90).then( (pieces) => addPieceSetToScene(pieces))
-		players.push(new Player(urlp['Player Red'], RED, 225))
-		players[1].addNewPieceSet(180).then( (pieces) => addPieceSetToScene(pieces))
-		players[1].addNewPieceSet(270).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(scene, board, urlp['Player Blue'], BLUE, 45))
+		players[0].addNewPieceSet(0).addNewPieceSet(90)
+		players.push(new Player(scene, board, urlp['Player Red'], RED, 225))
+		players[1].addNewPieceSet(180).addNewPieceSet(270)
 
 		totalPlayers = 2
-		remainingPlayers = totalPlayers
 	}
 	// If 3 players
 	else {
-		players.push(new Player(urlp['Player Blue'], BLUE, 0))
-		players[0].addNewPieceSet(0).then( (pieces) => addPieceSetToScene(pieces))
-		players.push(new Player(urlp['Player Red'], RED, 90))
-		players[1].addNewPieceSet(90).then( (pieces) => addPieceSetToScene(pieces))
-		players.push(new Player(urlp['Player Green'], GREEN, 180))
-		players[2].addNewPieceSet(180).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(scene, board, urlp['Player Blue'], BLUE, 0))
+		players[0].addNewPieceSet(0)
+		players.push(new Player(scene, board, urlp['Player Red'], RED, 90))
+		players[1].addNewPieceSet(90)
+		players.push(new Player(scene, board, urlp['Player Green'], GREEN, 180))
+		players[2].addNewPieceSet(180)
 
 		totalPlayers = 3
-		remainingPlayers = totalPlayers
 	}	
 	// If 4 players
 	if (Object.keys(urlp).length == 4) {
-		players.push(new Player(urlp['Player Yellow'], YELLOW, 270))
-		players[3].addNewPieceSet(270).then( (pieces) => addPieceSetToScene(pieces))
+		players.push(new Player(scene, board, urlp['Player Yellow'], YELLOW, 270))
+		players[3].addNewPieceSet(270)
 
 		totalPlayers = 4
-		remainingPlayers = totalPlayers
 	}
+
+	remainingPlayers = totalPlayers
 }
 
 // TODO: Implement function that checks if valid position
 function isValidPosition() {
-	let piece = currentPiece
-	let column = 10 + currentStud.position.x - 0.5
-	let row = 10 + currentStud.position.z - 0.5
 
-	if ((row - (piece.anchor_point[0] - piece.top)) < 0) { // If the piece is not greater than 0 (rows)
+	let piece = currentPiece
+	let anchor_column = 10 + currentStud.position.x - 0.5
+	let anchor_row = 10 + currentStud.position.z - 0.5
+
+
+	// Check that piece lies within the board (i.e. not over the edge)
+	if ((anchor_row - (piece.anchor_point[0] - piece.top)) < 0) { // If the piece is not greater than 0 (rows)
 		return false
 	}
-	if (19 < (row + (piece.bottom - piece.anchor_point[0]))) { // If the piece is not greater than 0 (columns)
+	if (19 < (anchor_row + (piece.bottom - piece.anchor_point[0]))) { // If the piece is not greater than 0 (columns)
 		return false
 	}
-	if ((column - (piece.anchor_point[1] - piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
+	if ((anchor_column - (piece.anchor_point[1] - piece.left)) < 0) { // If the piece is not less than or equal to 19 (rows)
 		return false
 	}
-	if (19 < (column + (piece.right - piece.anchor_point[1]))) { // If the piece is not less than or equal to 19 (columns)
+	if (19 < (anchor_column + (piece.right - piece.anchor_point[1]))) { // If the piece is not less than or equal to 19 (columns)
 		return false
 	}
-	return true
+	
+	// If it is the player's first turn, the only valid locations are those touching the player's corner
+	if (currentPlayer.score == 0) {
+		// Coordinates of the player's opening corner (only used once at the start)
+		let openingStudCol = 10 + currentPlayer.openingStud.position.x - 0.5
+		let openingStudRow = 10 + currentPlayer.openingStud.position.z - 0.5
+
+		for (const [k, row] of piece.grid.entries()) {
+			for (const [i, tile] of row.entries()) {
+				let tileRow = k + anchor_row - piece.anchor_point[0]
+				let tileCol = i + anchor_column - piece.anchor_point[1]
+				if (tile == 1) {
+					if (tileCol == openingStudCol && tileRow == openingStudRow) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+
+	// Check that the area is valid to place the piece
+	let is_adjacent = false // Boolean if piece is touching another piece on its side of the same color 
+	let is_corner = false // Boolean if piece's corner is touching another piece's corner of the same color
+	let is_overlapping = false // Boolean if the piece is covering an occupied tile of the grid
+	for (const [k, row] of piece.grid.entries()) {
+		for (const [i, tile] of row.entries()) {
+			let tileRow = k + anchor_row - piece.anchor_point[0]
+			let tileCol = i + anchor_column - piece.anchor_point[1]
+			if (tile == 1 && board.grid[tileRow][tileCol] != 0) {
+				is_overlapping = true
+			}
+			if (tile == 0) {
+				try {
+					if (board.grid[tileRow][tileCol] == currentPlayer.color) {
+						is_adjacent = true
+					}
+				} catch {}
+			}
+			if (tile == -1) {
+				try {
+					if (board.grid[tileRow][tileCol] == currentPlayer.color) {
+						is_corner = true
+					}
+				} catch {}
+			}
+		}
+	}
+	return (!is_adjacent && is_corner && !is_overlapping)
 }
 
 // Casts a shadow of the currentPiece on the studs
@@ -195,12 +243,12 @@ function castPieceShadow() {
 	}
 
 	for (const [k, row] of currentPiece.grid.entries()) {
-		for (const [i, stud] of row.entries()) {
+		for (const [i, tile] of row.entries()) {
 
 			let posX = i + 10 + currentStud.position.x - 0.5 - currentPiece.anchor_point[1]
 			let posZ = k + 10 + currentStud.position.z - 0.5 - currentPiece.anchor_point[0]
 
-			if (stud == 1) {
+			if (tile == 1) {
 				try {
 					board.studs[posZ][posX].material.color.set(color)
 				}
@@ -211,35 +259,54 @@ function castPieceShadow() {
 }
 
 // Place the piece on the board (essentially deletes the mesh and creates a new one)
-function placePiece() {
+function placePiece() {	
+	currentPiece.isPlaced = true
+
+	// Add the shape of the placed piece to board.grid
+	for (const [k, row] of currentPiece.grid.entries()) {
+		for (const [i, tile] of row.entries()) {
+
+			let posX = i + 10 + currentStud.position.x - 0.5 - currentPiece.anchor_point[1]
+			let posZ = k + 10 + currentStud.position.z - 0.5 - currentPiece.anchor_point[0]
+
+			if (tile == 1) 
+				board.grid[posZ][posX] = currentPlayer.color
+		}
+	}
+
+	// Delete old mesh
 	scene.remove(currentPiece.mesh)
 	currentPiece.mesh.geometry.dispose()
 
-	currentPiece.isPlaced = true
 
-	// Return a promise with the dropPieceAnimation promise chained to it
+	// Creates new mesh
+	// Returns a promise with the dropPieceAnimation promise chained to it
 	return currentPiece.createPieceMesh(currentPlayer.color).then( (mesh) => {
 		scene.add(currentPiece.mesh)
 		currentPiece.mesh.position.set(currentStud.position.x, 2, currentStud.position.z)
-	}).then ( () => {
 		let p = currentPiece
 		currentPiece = null
 		return dropPieceAnimation(p, 0)
 	})
 }
 
-function nextPlayer() {
+function nextPlayer(enableTransition=true) {
 	do {
 		// Next player
 		currentPlayerIndex = ++currentPlayerIndex % totalPlayers
 		currentPlayer = players[currentPlayerIndex]
 		viewFromSide()
-		rotate(true)
+		rotate(enableTransition)
 	} while (currentPlayer.continue != true && remainingPlayers > 0)
+	$('#player-name').text(`${currentPlayer.name}`)
+	$('#player-score').text(`Score: ${currentPlayer.score}`)
 }
 
 function gameEnd() {
 	// TODO: What to do when the game is over
+
+	// Remove all the html around the canvas
+	$('.floating').remove()
 
 	currentPlayer = null
 	currentAzimuthalAngle -= currentAzimuthalAngle % 90
@@ -280,23 +347,34 @@ function dropPieceAnimation(piece, height) {
 }
 
 window.forfeit = function() {
-	currentPlayer.continue = false
-	remainingPlayers--
+	if (currentPlayer) {
+		currentPlayer.continue = false
+		remainingPlayers--
 
-	if (currentPiece) {
-		cancelAnimationFrame(currentPiece.animationFrame)
-		dropPieceAnimation(currentPiece, -0.5)
-		currentPiece = null
-	}
+		if (currentPiece) {
+			cancelAnimationFrame(currentPiece.animationFrame)
+			dropPieceAnimation(currentPiece, -0.5)
+			currentPiece = null
+		}
 
-	if (remainingPlayers > 1)
-		nextPlayer()
-	else if (remainingPlayers == 1) {
-		$('#forfeitBtn').text('Finish')
-		nextPlayer()
+		if (remainingPlayers > 1)
+			nextPlayer()
+		else if (remainingPlayers == 1) {
+			$('#forfeitBtn').text('Finish')
+			nextPlayer()
+		}
+		else
+			gameEnd()
 	}
-	else
-		gameEnd()
+}
+
+function blinkStud(stud) {
+	if (currentBlinkColor > board.WHITE && colorIncrement > 0)
+		colorIncrement = -colorIncrement
+	if (currentBlinkColor < 0x333333 && colorIncrement < 0)
+		colorIncrement = -colorIncrement
+	currentBlinkColor += colorIncrement
+	stud.material.color.set(currentBlinkColor)
 }
 
 
@@ -352,6 +430,7 @@ $(document).click(function() {
 		// If the player clicks on a stud
 		if (currentPiece && currentStud && isValidPosition()) {
 			currentPlayer.score += currentPiece.score
+			$('#player-score').text(`Score: ${currentPlayer.score}`)
 			if (remainingPlayers > 1) {
 				placePiece().then(nextPlayer)
 				currentPlayer = null
@@ -395,45 +474,58 @@ var pointLight = new THREE.PointLight(0xffffff, 0.5)
 pointLight.position.set(0,20,0)
 scene.add(pointLight)
 
-// Add players and players' pieces
-addPlayers()
-currentPlayer = players[currentPlayerIndex]
-rotate(false)
+// Add studs to board
+board.addStuds().then( () => {
+	
+	// Add players and players' pieces
+	addPlayers()
+	nextPlayer(false)
+
+})
 
 
 // Render or animate loop
 function animate() {
-	mainAnimationFrame = requestAnimationFrame(animate)
+	requestAnimationFrame(animate)
 
 	// Camera control and positioning
 	const delta = clock.getDelta()
 	cameraControls.update(delta)
 
 	// Set every stud to white
-	currentStud = null
 	board.clean()
 
 	// Reset mouse cursor type
 	$('body').css('cursor', 'default')
 
-	// Raycasting
-	raycaster.setFromCamera(mouse,camera)
+	// Checks various things when it is the player's turn
+	PlayerTurn: {
 
-	// Raycast studs
-	for (const row of board.studs) {
-		// intersectObjects returns an array of intersected objects
-		let intersected = raycaster.intersectObjects(row)[0]
-		// Raycasting found no objects
-		if (!intersected) {} 
-		// Only display piece shadow if a piece is selected
-		else if (currentPiece) {
-			currentStud = intersected.object
-			castPieceShadow()
+		// Break if it is not currently a player's turn
+		if (!currentPlayer) { break PlayerTurn }
+		
+		// If it is the currentPlayer's first move, blink his/her openingStud
+		if (currentPlayer.score == 0)
+			blinkStud(currentPlayer.openingStud)
+
+		// Raycasting
+		raycaster.setFromCamera(mouse,camera)
+
+		// Raycast studs
+		currentStud = null
+		for (const row of board.studs) {
+			// intersectObjects returns an array of intersected objects
+			let intersected = raycaster.intersectObjects(row)[0]
+			// Raycasting found no objects
+			if (!intersected) {} 
+			// Only display piece shadow if a piece is selected
+			else if (currentPiece) {
+				currentStud = intersected.object
+				castPieceShadow()
+			}
 		}
-	}
 
-	// Raycast the current player's pieces
-	if (currentPlayer) {
+		// Raycast the current player's pieces
 		for (const piece of currentPlayer.pieces) {
 			let intersected = raycaster.intersectObject(piece.mesh)[0]
 			// Raycasting found no object or object is already placed
@@ -446,7 +538,7 @@ function animate() {
 
 	renderer.render(scene, camera)
 }
-mainAnimationFrame = animate()
+animate()
 
 
 })

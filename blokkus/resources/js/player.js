@@ -7,13 +7,14 @@ export { Player }
 
 // Class for player 
 class Player { 
-	constructor(name, color, angle) { // Takes three arguments (name, color, angle)
+	constructor(scene, board, name, color, angle) { // Takes three arguments (name, color, angle)
+		this.scene = scene;
 		this.name = name; // Player name
 		this.color = color; // Color of player's tiles
 		this.angle = angle; // Where the player is sitting around the table in degrees
 		this.score = 0; // Player score
 		this.continue = true; // Forfeit status
-		this.openingStud; // The corner stud that the player starts off on
+		this.openingStud = board.cornerStuds[angle - (angle%90) + 45]; // The corner stud that the player starts off on
 		this.pieces = [];
 	}
 
@@ -77,26 +78,22 @@ class Player {
 
 		let rotatedMatrix = new THREE.Matrix4().makeRotationY( toRadians(angle) )
 
-		let promises = []
-
 		for (const [i, piece] of pieces.entries()) {
-			promises.push( 
-				piece.createPieceMesh(this.color).then( () => {
+			piece.createPieceMesh(this.color).then( () => {
 
-					piece.mesh.position.set(pos[i].x,-0.5,pos[i].z).applyMatrix4(rotatedMatrix)
-					
-					// Rotate the piece mesh
-					piece.mesh.rotation.y = toRadians(angle)
-					
-					// Rotate the piece grid
-					piece.rotate( 4 - (angle/90) ) // '4-rotations' is to rotate the piece CCW
+				piece.mesh.position.set(pos[i].x,-0.5,pos[i].z).applyMatrix4(rotatedMatrix)
+				
+				// Rotate the piece mesh
+				piece.mesh.rotation.y = toRadians(angle)
+				
+				// Rotate the piece grid
+				piece.rotate( 4 - (angle/90) ) // '4-rotations' is to rotate the piece CCW
 
-					this.pieces.push(piece)
-
-					return piece
-				})
-			)
+				this.pieces.push(piece)
+				this.scene.add(piece.mesh)
+			})
 		}
-		return Promise.all(promises)
+
+		return this
 	}
 }

@@ -10,6 +10,9 @@ class Board {
 		this.VALID_COLOR = 0x779977
 		this.INVALID_COLOR = 0x777777
 
+		// Scene
+		this.scene = scene
+
 		// 20x20 grid of zeros
 		this.grid = []
 		for (let i = 0; i < 20; i++) {
@@ -37,12 +40,15 @@ class Board {
 		// A 2-dimensional array for storing the game board studs (20x20)
 		this.studs = []
 		this.cornerStuds = {}
-		
+	}
+
+	addStuds() {
 		// GLTF loader (for importing 3D models)
-		this.loader = new GLTFLoader();
-		this.loader.setPath('resources/static/');
-		new Promise( (resolve, reject) => {	
-			this.loader.load('stud.glb', (gltf) => {
+		let loader = new GLTFLoader()
+		loader.setPath('resources/static/')
+
+		return new Promise( (resolve, reject) => {	
+			loader.load('stud.glb', (gltf) => {
 				gltf.scene.traverse( (child) => {
 					if (child.type == 'Mesh') {
 						resolve(child)
@@ -58,7 +64,7 @@ class Board {
 					m.material = material.clone()
 					m.position.set(i+0.5,0,k+0.5)
 					row.push(m)
-					scene.add(m)
+					this.scene.add(m)
 				}
 				this.studs.push(row)
 			}

@@ -15,7 +15,6 @@ img {height:1.5rem; vertical-align:middle;}
 
 .container {
 	margin: 3vmin;  
-	width: 15vw;
 }
 .fixed-bottom {bottom:0;}
 .fixed-top {top:0;}
@@ -25,6 +24,7 @@ img {height:1.5rem; vertical-align:middle;}
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	align-items: center;
 }
 .h-flex {
 	display: flex;
@@ -35,6 +35,10 @@ img {height:1.5rem; vertical-align:middle;}
 .align-left {align-items: flex-start;}
 .align-right {align-items: flex-end;}
 .inline {display:inline;}
+.font-large {font-size:2rem;}
+.text-black {color:black; font-weight:bold;}
+#player-stats-box {background-color:white; padding: 0.7rem; border-radius:0.4rem; max-width:15vw;}
+#player-name {max-width:100%; overflow:hidden; text-overflow:ellipsis;}
 
 
 
