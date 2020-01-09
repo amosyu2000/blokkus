@@ -3,15 +3,14 @@ By [Andy Le](andytule.github.io) and [Amos Yu](amosyu2000.github.io)
 Project started December 19, 2019  
 
 ## Play
-Hosted at [amosyu2000.github.io/blokkus/home.html](amosyu2000.github.io/blokkus/home.html)  
+Hosted at [amosyu2000.github.io/blokkus/index.html](amosyu2000.github.io/blokkus/index.html).  
 
 [Rules of the game](https://www.ultraboardgames.com/blokus/game-rules.php) (From UltraBoardGames).
 
 ## About
-Blokkus is based off of the award-winning game [Blokus](https://www.mattelgames.com/en-ca/blokus) by Mattel Games. Compete to place as many of your pieces as possible on the board in this strategic turn-based board game. Supports 2-, 3-, and 4-player. Blokkus was implemented using HTML/CSS/JS.  
+Blokkus is based off of the award-winning game [Blokus](https://www.mattelgames.com/en-ca/blokus) by Mattel Games. Compete to place as many of your pieces as possible on the board in this strategic turn-based board game. Supports 2-, 3-, and 4-player. Blokkus was implemented using HTML/CSS/JS. The 3D pieces were designed in [Blender](https://www.blender.org/).
   
 Libraries used: 
 - [jQuery](https://jquery.com/)  
 - [three.js](https://threejs.org/)  
-	- [GLTFLoader](https://threejs.org/docs/#examples/en/loaders/GLTFLoader)  
-	- [Camera Controls](https://github.com/yomotsu/camera-controls)  
+- [Camera Controls](https://github.com/yomotsu/camera-controls)  

@@ -3,6 +3,7 @@ import * as THREE from '../../vendors/three/build/three.module.js'
 import { Board } from './board.js'
 import { Player } from './player.js'
 import { toRadians } from './math.js'
+import { createLeaderboard } from './leaderboard.js'
 
 // ===========
 //  CONSTANTS
@@ -80,7 +81,7 @@ function parseURL() {
 	for(let i = 0; i < s.length; i++) {
 		let u = s[i].split('=')
 		u[0] = u[0].split('+').join(' ')
-		urlp[u[0]] = u[1]
+		urlp[u[0]] = u[1].split('+').join(' ')
 	}
 	// If no name is provided, set the value to the key (a generic name)
 	for (const key in urlp) {
@@ -307,7 +308,7 @@ function gameEnd() {
 
 	// Remove all the html around the canvas
 	$('.floating').remove()
-
+	$('body').append(createLeaderboard(players))
 	currentPlayer = null
 	currentAzimuthalAngle -= currentAzimuthalAngle % 90
 	cameraControls.dampingFactor = 0.02
@@ -315,6 +316,7 @@ function gameEnd() {
 }
 
 function raisePieceAnimation(piece, height) {
+	cancelAnimationFrame(piece.animationFrame)
 	let mesh = piece.mesh
 	
 	return new Promise( (resolve,reject) => {		
@@ -331,6 +333,7 @@ function raisePieceAnimation(piece, height) {
 }
 
 function dropPieceAnimation(piece, height) {
+	cancelAnimationFrame(piece.animationFrame)
 	let mesh = piece.mesh
 
 	return new Promise( (resolve,reject) => {
@@ -352,7 +355,6 @@ window.forfeit = function() {
 		remainingPlayers--
 
 		if (currentPiece) {
-			cancelAnimationFrame(currentPiece.animationFrame)
 			dropPieceAnimation(currentPiece, -0.5)
 			currentPiece = null
 		}
@@ -408,19 +410,16 @@ $(document).click(function() {
 				if (currentPiece) {
 					// Deselect the currentPiece if it is the clicked object
 					if (raycaster.intersectObject(currentPiece.mesh)[0]) {
-						cancelAnimationFrame(currentPiece.animationFrame)
 						dropPieceAnimation(currentPiece, -0.5)
 						currentPiece = null
 						break raycasting
 					}
 					// Drop the previous current piece
-					cancelAnimationFrame(currentPiece.animationFrame)
 					dropPieceAnimation(currentPiece, -0.5)
 				}
 				// Set the clicked piece to the new current piece
 				currentPiece = piece
 				// Raise the new current piece
-				cancelAnimationFrame(currentPiece.animationFrame)
 				currentPiece.animationFrame = raisePieceAnimation(currentPiece, 0.5)
 				// Break (i.e. don't raycast any other pieces)
 				break raycasting
